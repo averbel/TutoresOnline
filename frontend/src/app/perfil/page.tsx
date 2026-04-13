@@ -26,9 +26,10 @@ export default function MiPerfil() {
   const fetchTutorData = async (tutorId: string) => {
     setLoadingTutorData(true);
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
       const [dispRes, solRes] = await Promise.all([
-        fetch(`http://localhost:4000/api/tutores/${tutorId}/disponibilidades`),
-        fetch(`http://localhost:4000/api/tutores/${tutorId}/solicitudes`)
+        fetch(`${API_URL}/api/tutores/${tutorId}/disponibilidades`),
+        fetch(`${API_URL}/api/tutores/${tutorId}/solicitudes`)
       ]);
       const dispData = await dispRes.json();
       const solData = await solRes.json();
@@ -46,7 +47,8 @@ export default function MiPerfil() {
     if (!session?.id) return;
     setIsSaving(true);
     try {
-      const response = await fetch(`http://localhost:4000/api/tutores/${session.id}/disponibilidades`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${API_URL}/api/tutores/${session.id}/disponibilidades`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ disponibilidades })
@@ -66,7 +68,8 @@ export default function MiPerfil() {
 
   const updateEstadoTutoria = async (tutoriaId: string, nuevoEstado: string) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/tutores/tutorias/${tutoriaId}/estado`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${API_URL}/api/tutores/tutorias/${tutoriaId}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado })
