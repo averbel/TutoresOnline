@@ -129,13 +129,13 @@ export default function MiPerfil() {
               🎓
             </div>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Tutor Workspace</h2>
-            <p style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{session.nombreCompleto}</p>
+            <p style={{ color: 'hsl(var(--primary))', fontWeight: 'bold' }}>{session.nombreCompleto}</p>
           </div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ padding: '1rem', background: 'var(--primary)', color: 'white', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+            <div style={{ padding: '1rem', background: 'hsl(var(--primary))', color: 'white', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                Panel Principal
             </div>
-            <Link href="/" style={{ padding: '1rem', color: 'var(--muted-foreground)', textDecoration: 'none', cursor: 'pointer' }}>
+            <Link href="/inicio" style={{ padding: '1rem', color: 'hsl(var(--muted-foreground))', textDecoration: 'none', cursor: 'pointer' }}>
                Volver a la Tienda
             </Link>
           </nav>
@@ -173,7 +173,7 @@ export default function MiPerfil() {
                       {disponibilidades.map((slot, idx) => (
                         <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
                           <select 
-                            style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'var(--background)', color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
+                            style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid rgba(255,255,255,0.2)' }}
                             value={slot.diaSemana}
                             onChange={(e) => updateSlot(idx, 'diaSemana', parseInt(e.target.value))}
                           >
@@ -183,13 +183,13 @@ export default function MiPerfil() {
                           <input 
                             type="time" 
                             value={slot.horaInicio} 
-                            style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'var(--background)', color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
+                            style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid rgba(255,255,255,0.2)' }}
                             onChange={(e) => updateSlot(idx, 'horaInicio', e.target.value)} 
                           />
                           <input 
                             type="time" 
                             value={slot.horaFin} 
-                            style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'var(--background)', color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
+                            style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid rgba(255,255,255,0.2)' }}
                             onChange={(e) => updateSlot(idx, 'horaFin', e.target.value)} 
                           />
                           <button 
@@ -219,7 +219,7 @@ export default function MiPerfil() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               
               {/* PRÓXIMAS REUNIONES (ACEPTADAS) */}
-              <div className="glass-card" style={{ borderLeft: '4px solid var(--primary)' }}>
+              <div className="glass-card" style={{ borderLeft: '4px solid hsl(var(--primary))' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
                   Próximas Tutorías
                 </h3>
@@ -232,7 +232,7 @@ export default function MiPerfil() {
                     {proximas.map(sol => (
                       <div key={sol.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
                         <div>
-                          <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{sol.materia?.nombre || 'Desconocida'}</div>
+                          <div style={{ fontWeight: 'bold', color: 'hsl(var(--primary))' }}>{sol.materia?.nombre || 'Desconocida'}</div>
                           <div style={{ fontSize: '0.9rem' }}>Estudiante: {sol.estudiante?.usuario?.nombreCompleto}</div>
                         </div>
                         <Link href={`/aula/${sol.id}?url=${encodeURIComponent(sol.urlEncuentro || '')}`} className="btn-primary" style={{ padding: '0.5rem 1rem' }}>
@@ -260,7 +260,7 @@ export default function MiPerfil() {
                       <div key={solicitud.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
                         <div><strong>Materia:</strong> {solicitud.materia?.nombre || 'Desconocida'}</div>
                         <div><strong>Estudiante:</strong> {solicitud.estudiante?.usuario?.nombreCompleto}</div>
-                        <div style={{ fontSize: '0.9rem', color: 'var(--muted-foreground)'}}>Fecha solicitada: {new Date(solicitud.fechaInicio).toLocaleString()}</div>
+                        <div style={{ fontSize: '0.9rem', color: 'hsl(var(--muted-foreground))'}}>Fecha solicitada: {new Date(solicitud.fechaInicio).toLocaleString()}</div>
                         
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                           <button 
