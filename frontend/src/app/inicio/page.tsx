@@ -4,8 +4,14 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function Home() {
+  type TutorData = {
+    usuarioId: string;
+    reputacionPromedio: number;
+    usuario: { nombreCompleto: string };
+    materias: { materia: { nombre: string }, tarifaPorHora: number }[];
+  };
   const [session, setSession] = useState<{ nombreCompleto: string; email: string; rol: string } | null>(null);
-  const [tutores, setTutores] = useState<any[]>([]);
+  const [tutores, setTutores] = useState<TutorData[]>([]);
   const [materiaQuery, setMateriaQuery] = useState('');
   const [ubicacionQuery, setUbicacionQuery] = useState('');
   
@@ -32,7 +38,7 @@ export default function Home() {
         setIaRespuesta(data.message || 'Error del servidor IA');
         setIaStatus('error');
       }
-    } catch(e) {
+    } catch {
       setIaRespuesta('Error de conexión con el Copiloto.');
       setIaStatus('error');
     }
@@ -42,6 +48,7 @@ export default function Home() {
     // 1. Carga de sesión
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSession(JSON.parse(savedUser));
     } else {
       window.location.href = '/';
@@ -307,7 +314,7 @@ export default function Home() {
          <div className="tutors-grid">
             {tutores.length === 0 ? (
                <p style={{ color: 'hsl(var(--muted-foreground))' }}>Conectando a Supabase para cargar tutores reales...</p>
-            ) : tutores.map((t, index) => {
+            ) : tutores.map((t) => {
                const materiaPrinc = t.materias[0];
                // Simulamos cantidad de clases para demostración
                const classNum = t.usuario.nombreCompleto.includes('Carlos') ? 124 : t.usuario.nombreCompleto.includes('Ana') ? 89 : 45;

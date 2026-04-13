@@ -14,7 +14,9 @@ export default function ThemeWrapper({ children }: { children: React.ReactNode }
         } else {
           document.body.classList.remove('theme-tutor');
         }
-      } catch(e) {}
+      } catch {
+        // Ignorar si hay error de parceo
+      }
     }
   }, []);
 

@@ -19,9 +19,11 @@ export default function AulaVirtual() {
     const url = paramsUrl.get('url');
 
     if (url) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoomUrl(url);
     } else {
       // Como fallback de demostracion si no viene en querystring
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoomUrl(`https://meet.jit.si/TutoresOnLine-${tutoriaId}`);
     }
   }, [tutoriaId]);

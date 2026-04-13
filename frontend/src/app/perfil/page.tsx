@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function MiPerfil() {
   const [session, setSession] = useState<{ id?: string, nombreCompleto: string; email: string; rol: string } | null>(null);
   const [disponibilidades, setDisponibilidades] = useState<{ diaSemana: number, horaInicio: string, horaFin: string }[]>([]);
-  const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  const [solicitudes, setSolicitudes] = useState<Record<string, unknown>[]>([]);
   const [loadingTutorData, setLoadingTutorData] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -59,7 +59,7 @@ export default function MiPerfil() {
       } else {
         alert("Error al guardar: " + data.message);
       }
-    } catch (error) {
+    } catch {
       alert("Error de red guardando disponibilidad.");
     } finally {
       setIsSaving(false);
@@ -90,7 +90,7 @@ export default function MiPerfil() {
       } else {
         alert("Error actualizando: " + data.message);
       }
-    } catch (error) {
+    } catch {
       alert("Error de red actualizando solicitud.");
     }
   };
@@ -103,9 +103,9 @@ export default function MiPerfil() {
     setDisponibilidades(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateSlot = (index: number, field: string, value: any) => {
+  const updateSlot = (index: number, field: string, value: string | number) => {
     const newSlots = [...disponibilidades];
-    (newSlots[index] as any)[field] = value;
+    (newSlots[index] as Record<string, string | number>)[field] = value;
     setDisponibilidades(newSlots);
   };
 

@@ -4,13 +4,21 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function BuscarTutores() {
-  const [session, setSession] = useState<any>(null);
-  const [tutores, setTutores] = useState<any[]>([]);
+  type TutorData = {
+    usuarioId: string;
+    reputacionPromedio: number;
+    biografia?: string;
+    usuario: { nombreCompleto: string };
+    materias: { materia: { nombre: string }, tarifaPorHora: number }[];
+  };
+  const [session, setSession] = useState<Record<string, unknown> | null>(null);
+  const [tutores, setTutores] = useState<TutorData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [ubicacionTerm, setUbicacionTerm] = useState('');
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedUser) setSession(JSON.parse(savedUser));
 
     // Captura la consulta de búsqueda si se redirigió desde la sección Hero
@@ -54,7 +62,7 @@ export default function BuscarTutores() {
 
   const filteredTutores = tutores.filter(t => {
      let pais = 'Virtual';
-     try { if(t.biografia) pais = JSON.parse(t.biografia).paisOrigen || 'Virtual'; } catch(e){}
+     try { if(t.biografia) pais = JSON.parse(t.biografia).paisOrigen || 'Virtual'; } catch {}
 
      const matchQuery = t.usuario.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) || 
         (t.materias[0]?.materia?.nombre || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -124,7 +132,7 @@ export default function BuscarTutores() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                            <div>
                               <h3 style={{ fontSize: '1.3rem', fontWeight: 800 }}>{t.usuario.nombreCompleto}</h3>
-                              <span style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>📍 {(() => { try { return JSON.parse(t.biografia || '{}').paisOrigen || 'Latinoamérica' } catch(e){ return 'Virtual' }})()}</span>
+                              <span style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>📍 {(() => { try { return JSON.parse(t.biografia || '{}').paisOrigen || 'Latinoamérica' } catch { return 'Virtual' }})()}</span>
                            </div>
                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 700, fontSize: '0.9rem' }}>
                               <span style={{ color: '#fbbf24' }}>⭐</span> {t.reputacionPromedio}

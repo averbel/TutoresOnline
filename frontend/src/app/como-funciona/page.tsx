@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function ComoFunciona() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedUser) setSession(JSON.parse(savedUser));
   }, []);
 

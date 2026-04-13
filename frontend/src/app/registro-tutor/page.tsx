@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function RegistroTutor() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Record<string, unknown> | null>(null);
   const [formData, setFormData] = useState({
     nombreCompleto: '', email: '', passwordHash: '', experiencia: '', especialidad: ''
   });
@@ -13,6 +13,7 @@ export default function RegistroTutor() {
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedUser) setSession(JSON.parse(savedUser));
   }, []);
 
