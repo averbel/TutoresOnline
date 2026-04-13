@@ -50,7 +50,7 @@ export default function RegistroTutor() {
     <div style={{ backgroundColor: 'hsl(var(--light-bg))', minHeight: '100vh' }}>
       <div className="container">
         
-        {/* REUSED HEADER */}
+        {/* CABECERA REUTILIZADA */}
         <header className="header">
           <Link href={session ? "/inicio" : "/"} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textDecoration: 'none', color: 'inherit' }}>
             <div style={{ backgroundColor: 'hsl(var(--primary))', width: '35px', height: '35px', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🎓</div>
@@ -67,7 +67,7 @@ export default function RegistroTutor() {
           </div>
         </header>
 
-        {/* REGISTRATION FORM HERO */}
+        {/* HERO DEL FORMULARIO DE REGISTRO */}
         <main style={{ padding: '4rem 0', display: 'flex', gap: '4rem', alignItems: 'flex-start' }} className="animate-fade-in split-screen">
           
           <div style={{ flex: 1 }}>

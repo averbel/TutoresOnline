@@ -82,7 +82,7 @@ body {
   color: hsl(var(--primary));
 }
 
-/* Layout Utilities */
+/* Utilidades de Diseño */
 .container {
   max-width: 1280px;
   margin: 0 auto;
@@ -108,7 +108,7 @@ body {
   align-items: center;
 }
 
-/* Hero Section */
+/* Sección Hero */
 .hero-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -132,7 +132,7 @@ body {
   max-width: 450px;
 }
 
-/* Search Bar */
+/* Barra de Búsqueda */
 .search-bar-container {
   display: flex;
   background: white;
@@ -168,7 +168,7 @@ body {
   margin-top: 0.3rem;
 }
 
-/* Light Background Section */
+/* Sección Fondo Claro */
 .section-light {
   background-color: hsl(var(--light-bg));
   padding: 5rem 0;
@@ -265,10 +265,10 @@ body {
   border-radius: 0.5rem;
   background-color: #eee;
   background-image: url('/profesores.jpg');
-  background-size: 200%; /* Collage slice size setup */
+  background-size: 200%; /* Configuración de tamaño para el collage */
 }
 
-/* Bottom Banner */
+/* Banner Inferior */
 .bottom-banner {
   background: linear-gradient(135deg, #eeeafd 0%, #e0d9fc 100%);
   border-radius: 1rem;
@@ -289,3 +289,29 @@ body {
 }
 
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* =========================================
+   TUTOR WORKSPACE VARIABLES & THEME
+   ========================================= */
+body.theme-tutor {
+  /* Premium Darker Corporate Theme for Tutors */
+  --background: 220 20% 12%; 
+  --foreground: 210 40% 98%;
+  
+  --primary: 38 92% 50%; /* Gold / Orange Accent */
+  --primary-hover: 38 92% 40%;
+  
+  --muted: 220 20% 20%;
+  --muted-foreground: 215 20% 65%;
+  --border: 220 20% 25%;
+  --light-bg: 220 20% 15%;
+}
+
+body.theme-tutor .glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}

@@ -9,7 +9,7 @@ export default function Home() {
   const [materiaQuery, setMateriaQuery] = useState('');
   const [ubicacionQuery, setUbicacionQuery] = useState('');
   
-  // IA States
+  // Estados de la IA
   const [iaTema, setIaTema] = useState('');
   const [iaRespuesta, setIaRespuesta] = useState('');
   const [iaStatus, setIaStatus] = useState<null | 'loading' | 'error' | 'success'>(null);
@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // 1. Session Load
+    // 1. Carga de sesión
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setSession(JSON.parse(savedUser));
@@ -85,7 +85,7 @@ export default function Home() {
 
   return (
     <div>
-      {/* HEADER NAVBAR */}
+      {/* BARRA DE NAVEGACIÓN SUPERIOR */}
       <div className="container">
         <header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -118,7 +118,7 @@ export default function Home() {
           )}
         </header>
 
-        {/* HERO SECTION */}
+        {/* SECCIÓN PRINCIPAL */}
         <section className="hero-section">
           <div>
             <h1 className="hero-title">
@@ -171,12 +171,12 @@ export default function Home() {
           </div>
           
           <div style={{ position: 'relative' }}>
-             {/* Imagen del Hero con Placeholder estético */}
+             {/* Imagen Principal con Marcador estético */}
              <div style={{ width: '100%', height: '500px', backgroundColor: '#e2e8f0', borderRadius: '1.5rem', overflow: 'hidden', position: 'relative' }}>
                 <div style={{ width: '100%', height: '100%', background: 'url("https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80") center/cover' }}></div>
              </div>
              
-             {/* Badges Flotantes */}
+             {/* Insignias Flotantes */}
              <div style={{ position: 'absolute', top: '3rem', left: '-2.5rem', background: 'white', padding: '0.8rem 1.2rem', borderRadius: '0.8rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
                 <div style={{ color: 'hsl(var(--primary))', fontSize: '1.5rem' }}>💻</div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.2 }}>Clases<br/>Virtuales<br/><span style={{fontWeight: 'normal', color: 'hsl(var(--muted-foreground))', fontSize: '0.75rem'}}>y Presenciales</span></div>
@@ -351,7 +351,7 @@ export default function Home() {
             })}
          </div>
 
-         {/* BOTTOM BANNER */}
+         {/* BANNER INFERIOR */}
          <div className="bottom-banner">
             <div>
                <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.5rem', color: 'hsl(var(--primary))' }}>¿Eres tutor? Únete a nuestra plataforma</h2>

@@ -67,7 +67,7 @@ export default function Login() {
             </p>
          </div>
 
-         {/* Decorative Badge */}
+         {/* Etiqueta Decorativa */}
          <div style={{ position: 'absolute', bottom: '3rem', left: '4rem', display: 'flex', gap: '1rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', padding: '1rem 1.5rem', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.2)' }}>
              <span style={{ fontSize: '1.5rem' }}>🛡️</span>
              <div>

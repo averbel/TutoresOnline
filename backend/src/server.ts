@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import usuarioRoutes from './infrastructure/routes/usuarioRoutes';
 import iaRoutes from './infrastructure/routes/iaRoutes';
+import tutorRoutes from './infrastructure/routes/tutorRoutes';
 
 dotenv.config();
 
@@ -12,9 +13,10 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Rutas
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/ia', iaRoutes);
+app.use('/api/tutores', tutorRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'TutoresOn-Line API Running' });

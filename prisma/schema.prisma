@@ -1,7 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Este es tu archivo de esquema de Prisma,
+// aprende más sobre él en la documentación: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Consigue una base de datos Postgres gratuita y alojada en segundos: `npx create-db`
 
 generator client {
   provider = "prisma-client"

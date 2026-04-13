@@ -13,7 +13,7 @@ export default function BuscarTutores() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) setSession(JSON.parse(savedUser));
 
-    // Capturate search query if redirected from Hero Section
+    // Captura la consulta de búsqueda si se redirigió desde la sección Hero
     if (typeof window !== 'undefined') {
        const urlParams = new URLSearchParams(window.location.search);
        const q = urlParams.get('q');
@@ -68,7 +68,7 @@ export default function BuscarTutores() {
     <div style={{ backgroundColor: 'hsl(var(--light-bg))', minHeight: '100vh', paddingBottom: '5rem' }}>
       <div className="container">
         
-        {/* REUSED HEADER */}
+        {/* CABECERA REUTILIZADA */}
         <header className="header">
           <Link href={session ? "/inicio" : "/"} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textDecoration: 'none', color: 'inherit' }}>
             <div style={{ backgroundColor: 'hsl(var(--primary))', width: '35px', height: '35px', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🎓</div>
