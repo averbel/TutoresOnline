@@ -88,12 +88,12 @@ export default function MiPerfil() {
         if (nuevoEstado === 'RECHAZADA') {
           setSolicitudes(prev => prev.filter(s => s.id !== tutoriaId));
         } else {
-           // Lo marcamos como aceptada localmente y guardamos su URL 
-           setSolicitudes(prev => prev.map(s => 
-              s.id === tutoriaId 
-              ? { ...s, estado: 'ACEPTADA', urlEncuentro: data.data.urlEncuentro } 
+          // Lo marcamos como aceptada localmente y guardamos su URL 
+          setSolicitudes(prev => prev.map(s =>
+            s.id === tutoriaId
+              ? { ...s, estado: 'ACEPTADA', urlEncuentro: data.data.urlEncuentro }
               : s
-           ));
+          ));
         }
       } else {
         alert("Error actualizando: " + data.message);
@@ -122,13 +122,13 @@ export default function MiPerfil() {
   if (!session) return <div style={{ textAlign: 'center', padding: '4rem' }}>Cargando datos de seguridad...</div>;
 
   const isTutor = session.rol === 'TUTOR';
-  
+
   const pendientes = solicitudes.filter(s => s.estado === 'PENDIENTE');
   const proximas = solicitudes.filter(s => s.estado === 'ACEPTADA');
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', flexDirection: isTutor ? 'row' : 'column' }}>
-      
+
       {/* Sidebar para Tutores */}
       {isTutor && (
         <aside style={{ width: '300px', backgroundColor: 'rgba(0,0,0,0.3)', borderRight: '1px solid var(--border)', padding: '2rem' }}>
@@ -141,10 +141,10 @@ export default function MiPerfil() {
           </div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: 'hsl(var(--primary))', color: 'white', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-               Panel Principal
+              Panel Principal
             </div>
             <Link href="/inicio" style={{ padding: '1rem', color: 'hsl(var(--muted-foreground))', textDecoration: 'none', cursor: 'pointer' }}>
-               Volver a la Tienda
+              Volver a la Tienda
             </Link>
           </nav>
         </aside>
@@ -152,24 +152,24 @@ export default function MiPerfil() {
 
       {/* Contenido Principal */}
       <main style={{ flex: 1, padding: '2rem', maxWidth: isTutor ? '100%' : '800px', margin: isTutor ? '0' : '4rem auto' }}>
-        
+
         {/* Cabecera para no-tutores (Estudiantes / Admins) */}
         {!isTutor && (
-           <div className="glass-card mb-8">
-              <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{session.nombreCompleto}</h1>
-              <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
-           </div>
+          <div className="glass-card mb-8">
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{session.nombreCompleto}</h1>
+            <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
+          </div>
         )}
 
         {isTutor && (
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 1fr', gap: '2rem', alignItems: 'start' }}>
-            
+
             {/* COLUMNA IZQUIERDA: DISPONIBILIDAD */}
             <div className="glass-card">
               <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
                 Configuración de Horarios
               </h3>
-              
+
               {loadingTutorData ? (
                 <p>Cargando disponibilidad...</p>
               ) : (
@@ -180,7 +180,7 @@ export default function MiPerfil() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
                       {disponibilidades.map((slot, idx) => (
                         <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
-                          <select 
+                          <select
                             style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid rgba(255,255,255,0.2)' }}
                             value={slot.diaSemana}
                             onChange={(e) => updateSlot(idx, 'diaSemana', parseInt(e.target.value))}
@@ -188,19 +188,19 @@ export default function MiPerfil() {
                             {diasSemana.map((d, i) => <option key={i} value={i}>{d}</option>)}
                           </select>
 
-                          <input 
-                            type="time" 
-                            value={slot.horaInicio} 
+                          <input
+                            type="time"
+                            value={slot.horaInicio}
                             style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid rgba(255,255,255,0.2)' }}
-                            onChange={(e) => updateSlot(idx, 'horaInicio', e.target.value)} 
+                            onChange={(e) => updateSlot(idx, 'horaInicio', e.target.value)}
                           />
-                          <input 
-                            type="time" 
-                            value={slot.horaFin} 
+                          <input
+                            type="time"
+                            value={slot.horaFin}
                             style={{ padding: '0.5rem', borderRadius: '4px', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', border: '1px solid rgba(255,255,255,0.2)' }}
-                            onChange={(e) => updateSlot(idx, 'horaFin', e.target.value)} 
+                            onChange={(e) => updateSlot(idx, 'horaFin', e.target.value)}
                           />
-                          <button 
+                          <button
                             onClick={() => removeDisponibilidadSlot(idx)}
                             style={{ marginLeft: 'auto', backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px', cursor: 'pointer' }}
                           >
@@ -225,17 +225,17 @@ export default function MiPerfil() {
 
             {/* COLUMNA DERECHA: SOLICITUDES Y ENCUENTROS */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              
+
               {/* PRÓXIMAS REUNIONES (ACEPTADAS) */}
               <div className="glass-card" style={{ borderLeft: '4px solid hsl(var(--primary))' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
                   Próximas Tutorías
                 </h3>
-                 {loadingTutorData ? (
+                {loadingTutorData ? (
                   <p>Cargando...</p>
-                 ) : proximas.length === 0 ? (
+                ) : proximas.length === 0 ? (
                   <p style={{ color: 'hsl(var(--muted-foreground))' }}>No tienes reuniones programadas.</p>
-                 ) : (
+                ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {proximas.map(sol => (
                       <div key={sol.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
@@ -249,7 +249,7 @@ export default function MiPerfil() {
                       </div>
                     ))}
                   </div>
-                 )}
+                )}
               </div>
 
               {/* SOLICITUDES PENDIENTES */}
@@ -257,7 +257,7 @@ export default function MiPerfil() {
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
                   Solicitudes Entrantes
                 </h3>
-                
+
                 {loadingTutorData ? (
                   <p>Cargando solicitudes...</p>
                 ) : pendientes.length === 0 ? (
@@ -268,16 +268,16 @@ export default function MiPerfil() {
                       <div key={solicitud.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
                         <div><strong>Materia:</strong> {solicitud.materia?.nombre || 'Desconocida'}</div>
                         <div><strong>Estudiante:</strong> {solicitud.estudiante?.usuario?.nombreCompleto}</div>
-                        <div style={{ fontSize: '0.9rem', color: 'hsl(var(--muted-foreground))'}}>Fecha solicitada: {new Date(solicitud.fechaInicio).toLocaleString()}</div>
-                        
+                        <div style={{ fontSize: '0.9rem', color: 'hsl(var(--muted-foreground))' }}>Fecha solicitada: {new Date(solicitud.fechaInicio).toLocaleString()}</div>
+
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                          <button 
+                          <button
                             onClick={() => updateEstadoTutoria(solicitud.id, 'ACEPTADA')}
                             style={{ flex: 1, backgroundColor: '#2ecc71', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                           >
                             Aceptar ✔
                           </button>
-                          <button 
+                          <button
                             onClick={() => updateEstadoTutoria(solicitud.id, 'RECHAZADA')}
                             style={{ flex: 1, backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                           >
