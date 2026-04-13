@@ -6,7 +6,15 @@ import Link from 'next/link';
 export default function MiPerfil() {
   const [session, setSession] = useState<{ id?: string, nombreCompleto: string; email: string; rol: string } | null>(null);
   const [disponibilidades, setDisponibilidades] = useState<{ diaSemana: number, horaInicio: string, horaFin: string }[]>([]);
-  const [solicitudes, setSolicitudes] = useState<Record<string, unknown>[]>([]);
+  type SolicitudData = {
+    id: string;
+    estado: string;
+    fechaInicio: string;
+    urlEncuentro?: string;
+    materia?: { nombre: string };
+    estudiante?: { usuario: { nombreCompleto: string } };
+  };
+  const [solicitudes, setSolicitudes] = useState<SolicitudData[]>([]);
   const [loadingTutorData, setLoadingTutorData] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
