@@ -17,9 +17,8 @@ export default function Registro() {
     setStatus('loading');
     
     try {
-      // Hacemos el puente (Fetch) desde nuestro cliente Next.js hacia el API Node.js/Express
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      const response = await fetch(`${API_URL}/api/usuarios/estudiantes`, {
+      // Hacemos el puente (Fetch) hacia nuestras Rutas API de Next.js (Serverless)
+      const response = await fetch(`/api/usuarios/estudiantes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +130,7 @@ export default function Registro() {
 
             {status === 'error' && (
               <p style={{ color: 'hsl(0, 100%, 70%)', fontSize: '0.9rem', textAlign: 'center' }}>
-                Error al registrar. Verifica tener tu Backend ejecutándose (npm run dev desde backend).
+                Error al registrar. Verifica la conexión a la base de datos.
               </p>
             )}
 

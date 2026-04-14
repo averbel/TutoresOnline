@@ -30,11 +30,20 @@ export default function BuscarTutores() {
        if (loc) setUbicacionTerm(loc);
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    fetch(`${API_URL}/api/usuarios/tutores`)
+    fetch(`/api/usuarios/tutores`)
       .then(res => res.json())
-      .then(data => setTutores(data))
-      .catch(console.error);
+      .then(data => {
+        if (Array.isArray(data)) {
+          setTutores(data);
+        } else {
+          console.error("API Error: data is not an array", data);
+          setTutores([]);
+        }
+      })
+      .catch(err => {
+        console.error("Fetch error:", err);
+        setTutores([]);
+      });
   }, []);
 
   const getTutorImageStyle = (nombre: string) => {
@@ -60,17 +69,17 @@ export default function BuscarTutores() {
     return { backgroundImage: `url('${url}')`, backgroundSize: 'cover', backgroundPosition: 'center' };
   };
 
-  const filteredTutores = tutores.filter(t => {
-     let pais = 'Virtual';
-     try { if(t.biografia) pais = JSON.parse(t.biografia).paisOrigen || 'Virtual'; } catch {}
+   const filteredTutores = Array.isArray(tutores) ? tutores.filter(t => {
+      let pais = 'Virtual';
+      try { if(t.biografia) pais = JSON.parse(t.biografia).paisOrigen || 'Virtual'; } catch {}
 
-     const matchQuery = t.usuario.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        (t.materias[0]?.materia?.nombre || '').toLowerCase().includes(searchTerm.toLowerCase());
-     
-     const matchLoc = !ubicacionTerm || pais.toLowerCase().includes(ubicacionTerm.toLowerCase());
-     
-     return matchQuery && matchLoc;
-  });
+      const matchQuery = t.usuario.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()) || 
+         (t.materias[0]?.materia?.nombre || '').toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchLoc = !ubicacionTerm || pais.toLowerCase().includes(ubicacionTerm.toLowerCase());
+      
+      return matchQuery && matchLoc;
+   }) : [];
 
   return (
     <div style={{ backgroundColor: 'hsl(var(--light-bg))', minHeight: '100vh', paddingBottom: '5rem' }}>

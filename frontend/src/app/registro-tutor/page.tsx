@@ -21,8 +21,7 @@ export default function RegistroTutor() {
     e.preventDefault();
     setStatus('loading');
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      const response = await fetch(`${API_URL}/api/usuarios/tutores_registro`, {
+      const response = await fetch(`/api/usuarios/tutores_registro`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

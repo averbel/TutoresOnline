@@ -1,0 +1,110 @@
+// Este es tu archivo de esquema de Prisma,
+// aprende más sobre él en la documentación: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---- NUESTRAS ENTIDADES PRINCIPALES ---- //
+
+model Usuario {
+  id             String      @id @default(uuid())
+  nombreCompleto String
+  email          String      @unique
+  passwordHash   String
+  rol            String      @default("ESTUDIANTE") // Roles permitidos: ADMIN, TUTOR, ESTUDIANTE
+  telefono       String?
+  fechaRegistro  DateTime    @default(now())
+
+  // Herencia y relaciones inversas
+  tutor          Tutor?
+  estudiante     Estudiante?
+}
+
+model Tutor {
+  usuarioId          String @id
+  biografia          String?
+  latitud            Float?
+  longitud           Float?
+  reputacionPromedio Float @default(0.0)
+  activoAhoraFlash   Boolean @default(false)
+
+  usuario            Usuario @relation(fields: [usuarioId], references: [id])
+  disponibilidades   Disponibilidad[]
+  materias           TutorMateria[]
+  tutoriasBrindadas  Tutoria[]
+}
+
+model Estudiante {
+  usuarioId      String @id
+  gradoAcademico String?
+
+  usuario          Usuario @relation(fields: [usuarioId], references: [id])
+  tutoriasReservadas Tutoria[]
+}
+
+// ---- CATÁLAGOS Y TABLAS INTERMEDIAS ---- //
+
+model Materia {
+  id             String @id @default(uuid())
+  nombre         String
+  nivelEducativo String
+
+  tutores        TutorMateria[]
+  tutorias       Tutoria[]
+}
+
+model TutorMateria {
+  tutorId        String
+  materiaId      String
+  tarifaPorHora  Float
+
+  tutor          Tutor @relation(fields: [tutorId], references: [usuarioId])
+  materia        Materia @relation(fields: [materiaId], references: [id])
+
+  // Identificador compuesto
+  @@id([tutorId, materiaId])
+}
+
+// ---- LÓGICA DE NEGOCIOS ---- //
+
+model Disponibilidad {
+  id        String @id @default(uuid())
+  tutorId   String
+  diaSemana Int 
+  horaInicio String
+  horaFin   String
+
+  tutor     Tutor @relation(fields: [tutorId], references: [usuarioId])
+}
+
+model Tutoria {
+  id                  String @id @default(uuid())
+  estudianteId        String
+  tutorId             String
+  materiaId           String
+  fechaInicio         DateTime
+  fechaFin            DateTime
+  estado              String @default("PENDIENTE") 
+  modalidad           String @default("VIRTUAL") 
+  urlEncuentro        String?
+  notasIaGeneradas    String?
+
+  estudiante          Estudiante @relation(fields: [estudianteId], references: [usuarioId])
+  tutor               Tutor @relation(fields: [tutorId], references: [usuarioId])
+  materia             Materia @relation(fields: [materiaId], references: [id])
+  resenas             Resena[]
+}
+
+model Resena {
+  id                   String @id @default(uuid())
+  tutoriaId            String
+  calificacionEstrellas Int
+  feedback             String?
+
+  tutoria              Tutoria @relation(fields: [tutoriaId], references: [id])
+}

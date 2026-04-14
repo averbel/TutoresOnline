@@ -26,3 +26,6 @@ backend/dist/
 # SO Específico
 .DS_Store
 Thumbs.db
+
+# Generated files
+frontend/generated/

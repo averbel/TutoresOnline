@@ -25,8 +25,7 @@ export default function Home() {
     setIaStatus('loading');
     setIaRespuesta('');
     try {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      const res = await fetch(`${apiHost}/api/ia/generar-resumen`, {
+      const res = await fetch(`/api/ia/generar-resumen`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tema: iaTema })
       });
@@ -54,12 +53,21 @@ export default function Home() {
       window.location.href = '/';
     }
 
-    // 2. Tutors Load (Llenando dinámicamente desde el backend)
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    fetch(`${apiHost}/api/usuarios/tutores`)
+    // 2. Tutors Load (Llenando dinámicamente desde el backend unificado)
+    fetch(`/api/usuarios/tutores`)
       .then(res => res.json())
-      .then(data => setTutores(data))
-      .catch(console.error);
+      .then(data => {
+        if (Array.isArray(data)) {
+          setTutores(data);
+        } else {
+          console.error("API Error in inicio:", data);
+          setTutores([]);
+        }
+      })
+      .catch(err => {
+        console.error("Fetch error in inicio:", err);
+        setTutores([]);
+      });
   }, []);
 
   const handleLogout = () => {
