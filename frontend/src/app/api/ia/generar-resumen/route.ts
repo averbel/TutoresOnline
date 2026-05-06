@@ -1,37 +1,54 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req: Request) {
     try {
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = process.env.OPENROUTER_API_KEY;
         const { tema } = await req.json();
 
         if (!tema) {
             return NextResponse.json({ status: 'error', message: 'Falta especificar el tema' }, { status: 400 });
         }
 
-        let respuestaIA = "";
-
-        if (!apiKey || apiKey === 'AIzaSyTuClaveAqui...') {
-            return NextResponse.json({ status: 'error', message: 'Clave de API de Gemini no configurada o inválida. Asegúrate de reiniciar tu servidor de desarrollo.' }, { status: 500 });
+        if (!apiKey) {
+            return NextResponse.json({ status: 'error', message: 'Clave de API de OpenRouter no configurada. Asegúrate de reiniciar tu servidor de desarrollo.' }, { status: 500 });
         }
 
         try {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const prompt = `Eres Lenux, un asistente de IA experto de TutoresOnLine. Redacta un resumen conciso y agradable (con emojis) sobre: "${tema}". Sin saludos, ve directo al grano.`;
-            const result = await model.generateContent(prompt);
-            respuestaIA = result.response.text();
-        } catch (geminiEx: any) {
-            console.error("Error real de Gemini API:", geminiEx);
-            return NextResponse.json({ status: 'error', message: `Error de la API de Gemini: ${geminiEx.message}` }, { status: 500 });
-        }
+            
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "TutoresOnLine"
+                },
+                body: JSON.stringify({
+                    model: "google/gemini-2.0-flash-exp:free",
+                    messages: [
+                        { role: "user", content: prompt }
+                    ]
+                })
+            });
 
-        return NextResponse.json({ status: 'success', data: respuestaIA });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(`OpenRouter Error: ${response.status} - ${JSON.stringify(errorData)}`);
+            }
+
+            const data = await response.json();
+            const respuestaIA = data.choices[0].message.content;
+
+            return NextResponse.json({ status: 'success', data: respuestaIA });
+        } catch (iaError: unknown) {
+            console.error("Error real de OpenRouter API:", iaError);
+            const errorMessage = iaError instanceof Error ? iaError.message : "Error desconocido";
+            return NextResponse.json({ status: 'error', message: `Error de la API: ${errorMessage}` }, { status: 500 });
+        }
 
     } catch (error: unknown) {
         console.error("Error Grave IA:", error);
         return NextResponse.json({ status: 'error', message: 'Error interno del servidor IA.' }, { status: 500 });
     }
 }
-
