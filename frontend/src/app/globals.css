@@ -307,11 +307,16 @@ body.theme-tutor {
   --light-bg: 220 20% 15%;
 }
 
-body.theme-tutor .glass-card {
+.glass-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   border-radius: 1rem;
   padding: 2rem;
   backdrop-filter: blur(10px);
+}
+
+body.theme-tutor .glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

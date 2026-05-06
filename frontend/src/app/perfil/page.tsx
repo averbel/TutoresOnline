@@ -27,7 +27,7 @@ export default function MiPerfil() {
         fetchTutorData(parsedUser.id);
       }
     } else {
-      window.location.href = '/login';
+      window.location.href = '/';
     }
   }, []);
 
@@ -61,6 +61,7 @@ export default function MiPerfil() {
       });
       const data = await response.json();
       if (data.status === 'success') {
+        setDisponibilidades(data.data);
         alert("Disponibilidad guardada con éxito!");
       } else {
         alert("Error al guardar: " + data.message);
@@ -109,9 +110,11 @@ export default function MiPerfil() {
   };
 
   const updateSlot = (index: number, field: string, value: string | number) => {
-    const newSlots = [...disponibilidades];
-    (newSlots[index] as Record<string, string | number>)[field] = value;
-    setDisponibilidades(newSlots);
+    setDisponibilidades(prev => {
+      const newSlots = [...prev];
+      newSlots[index] = { ...newSlots[index], [field]: value };
+      return newSlots;
+    });
   };
 
   const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -128,7 +131,7 @@ export default function MiPerfil() {
 
       {/* Sidebar para Tutores */}
       {isTutor && (
-        <aside style={{ width: '300px', backgroundColor: 'rgba(0,0,0,0.3)', borderRight: '1px solid var(--border)', padding: '2rem' }}>
+        <aside style={{ width: '300px', backgroundColor: 'rgba(0,0,0,0.3)', borderRight: '1px solid hsl(var(--border))', padding: '2rem' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', margin: '0 auto 1rem auto' }}>
               🎓

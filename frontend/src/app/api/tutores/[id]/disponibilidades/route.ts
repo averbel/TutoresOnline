@@ -30,7 +30,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         if (disponibilidades.length > 0) {
             await prisma.disponibilidad.createMany({
-                data: disponibilidades.map((d: any) => ({
+                data: disponibilidades.map((d: { diaSemana: number, horaInicio: string, horaFin: string }) => ({
                     tutorId: id,
                     diaSemana: d.diaSemana,
                     horaInicio: d.horaInicio,

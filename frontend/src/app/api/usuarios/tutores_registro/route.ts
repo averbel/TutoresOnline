@@ -27,9 +27,10 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ status: 'success', data: nuevoTutor });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error);
-        if (error.code === 'P2002') return NextResponse.json({ status: 'error', message: 'Correo corporativo ya registrado.' }, { status: 400 });
+        const isDuplicate = typeof error === 'object' && error !== null && 'code' in error && (error as Record<string, unknown>).code === 'P2002';
+        if (isDuplicate) return NextResponse.json({ status: 'error', message: 'Correo corporativo ya registrado.' }, { status: 400 });
         return NextResponse.json({ status: 'error', message: 'Error interno o formato inválido' }, { status: 400 });
     }
 }

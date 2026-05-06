@@ -33,10 +33,10 @@ export default function BuscarTutores() {
     fetch(`/api/usuarios/tutores`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          setTutores(data);
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          setTutores(data.data);
         } else {
-          console.error("API Error: data is not an array", data);
+          console.error("API Error: data is not as expected", data);
           setTutores([]);
         }
       })

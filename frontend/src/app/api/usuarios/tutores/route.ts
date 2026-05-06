@@ -11,9 +11,9 @@ export async function GET() {
                 }
             }
         });
-        return NextResponse.json(tutores);
-    } catch (error: any) {
-        console.error("Database connection error:", error.message);
+        return NextResponse.json({ status: 'success', data: tutores });
+    } catch (error: unknown) {
+        console.error("Database connection error:", error instanceof Error ? error.message : String(error));
         return NextResponse.json({ 
             status: 'error', 
             message: 'Error interno conectando a la base de datos'

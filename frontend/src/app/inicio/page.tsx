@@ -15,7 +15,7 @@ export default function Home() {
   const [materiaQuery, setMateriaQuery] = useState('');
   const [ubicacionQuery, setUbicacionQuery] = useState('');
   
-  // Estados de la IA
+  // Estados de la IA (Lenux)
   const [iaTema, setIaTema] = useState('');
   const [iaRespuesta, setIaRespuesta] = useState('');
   const [iaStatus, setIaStatus] = useState<null | 'loading' | 'error' | 'success'>(null);
@@ -38,10 +38,11 @@ export default function Home() {
         setIaStatus('error');
       }
     } catch {
-      setIaRespuesta('Error de conexión con el Copiloto.');
+      setIaRespuesta('Error de conexión con Lenux.');
       setIaStatus('error');
     }
   };
+
 
   useEffect(() => {
     // 1. Carga de sesión
@@ -57,8 +58,8 @@ export default function Home() {
     fetch(`/api/usuarios/tutores`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          setTutores(data);
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          setTutores(data.data);
         } else {
           console.error("API Error in inicio:", data);
           setTutores([]);
@@ -212,16 +213,16 @@ export default function Home() {
         </section>
       </div>
 
-      {/* CEREBRO IA COPILOTO */}
+      {/* CEREBRO IA LENUX */}
       <div className="container" style={{ padding: '2rem 2rem 4rem' }}>
         <div style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, #4338ca 100%)', borderRadius: '1.5rem', padding: '3rem', color: 'white', display: 'flex', gap: '3rem', alignItems: 'center', boxShadow: '0 20px 40px rgba(67, 56, 202, 0.2)' }} className="split-screen">
            <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem' }}>
                 <span style={{ fontSize: '2rem' }}>🧠</span>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Copiloto IA</h2>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Lenux</h2>
               </div>
               <p style={{ opacity: 0.9, fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.6 }}>
-                Acelera tu aprendizaje. Pídele al asistente basado en Gemini que te genere un resumen instantáneo sobre cualquier tema o fórmula.
+                Acelera tu aprendizaje. Pídele a Lenux que te genere un resumen instantáneo sobre cualquier tema o fórmula.
               </p>
               
               <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.5rem', borderRadius: '0.8rem' }}>
@@ -243,7 +244,7 @@ export default function Home() {
               {iaStatus === 'loading' && (
                  <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: '#a5b4fc', fontWeight: 'bold' }}>
                    <div style={{ width: '20px', height: '20px', border: '3px solid #a5b4fc', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                   Sintetizando información biométrica...
+                   Lenux está pensando...
                  </div>
               )}
               {iaRespuesta && (
