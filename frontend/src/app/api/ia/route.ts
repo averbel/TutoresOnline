@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         'X-Title': 'TutoresOnLine',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'meta-llama/llama-3.3-70b-instruct:free',
         messages: mensajes,
       }),
     });
