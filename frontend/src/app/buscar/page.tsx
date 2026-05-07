@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { GraduationCap, Search, MapPin, Star } from 'lucide-react';
 
 export default function BuscarTutores() {
   type TutorData = {
@@ -88,7 +89,7 @@ export default function BuscarTutores() {
         {/* CABECERA REUTILIZADA */}
         <header className="header">
           <Link href={session ? "/inicio" : "/"} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ backgroundColor: 'hsl(var(--primary))', width: '35px', height: '35px', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🎓</div>
+            <div style={{ backgroundColor: 'hsl(var(--primary))', width: '35px', height: '35px', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={20} /></div>
             <span style={{ fontSize: '1.6rem', fontWeight: 800 }}>Tutores<span className="text-primary">On-Line</span></span>
           </Link>
           <div className="header-links">
@@ -112,14 +113,14 @@ export default function BuscarTutores() {
             
             <div style={{ display: 'flex', gap: '1rem', background: 'white', padding: '0.5rem', borderRadius: '0.8rem', width: '100%', maxWidth: '600px' }}>
                <div style={{ display: 'flex', alignItems: 'center', flex: 1, borderRight: '1px solid hsl(var(--border))', paddingRight: '0.5rem' }}>
-                 <span style={{ padding: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>🔍</span>
+                 <span style={{ padding: '0.8rem', display: 'flex', alignItems: 'center' }}><Search size={20} className="text-gray-500" /></span>
                  <input 
                    type="text" placeholder="Materia o nombre..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                    style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.95rem', color: 'hsl(var(--foreground))' }}
                  />
                </div>
                <div style={{ display: 'flex', alignItems: 'center', flex: 0.6 }}>
-                 <span style={{ padding: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>📍</span>
+                 <span style={{ padding: '0.8rem', display: 'flex', alignItems: 'center' }}><MapPin size={20} className="text-gray-500" /></span>
                  <input 
                    type="text" placeholder="País (Ej. Perú)" value={ubicacionTerm} onChange={e => setUbicacionTerm(e.target.value)}
                    style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.95rem', color: 'hsl(var(--foreground))' }}
@@ -141,10 +142,10 @@ export default function BuscarTutores() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                            <div>
                               <h3 style={{ fontSize: '1.3rem', fontWeight: 800 }}>{t.usuario.nombreCompleto}</h3>
-                              <span style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>📍 {(() => { try { return JSON.parse(t.biografia || '{}').paisOrigen || 'Latinoamérica' } catch { return 'Virtual' }})()}</span>
+                              <span style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', display: 'flex', alignItems: 'center', gap: '0.2rem' }}><MapPin size={14} /> {(() => { try { return JSON.parse(t.biografia || '{}').paisOrigen || 'Latinoamérica' } catch { return 'Virtual' }})()}</span>
                            </div>
                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 700, fontSize: '0.9rem' }}>
-                              <span style={{ color: '#fbbf24' }}>⭐</span> {t.reputacionPromedio}
+                              <Star size={14} className="text-yellow-400 fill-current" /> {t.reputacionPromedio}
                            </span>
                         </div>
                         <div style={{ color: 'hsl(var(--primary))', fontWeight: 600, fontSize: '0.95rem', marginBottom: '1rem' }}>

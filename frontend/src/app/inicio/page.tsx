@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { 
+  GraduationCap, BookOpen, MapPin, Search, Video, Star, Calendar, MessageCircle, Shield, Globe, User
+} from 'lucide-react';
 
 export default function Home() {
   type TutorData = {
@@ -25,9 +28,9 @@ export default function Home() {
     setIaStatus('loading');
     setIaRespuesta('');
     try {
-      const res = await fetch(`/api/ia/generar-resumen`, {
+      const res = await fetch(`/api/ia`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tema: iaTema })
+        body: JSON.stringify({ modo: 'resumen', mensaje: iaTema })
       });
       const data = await res.json();
       if (res.ok && data.status === 'success') {
@@ -105,7 +108,9 @@ export default function Home() {
       <div className="container">
         <header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <div style={{ backgroundColor: 'hsl(var(--primary))', width: '35px', height: '35px', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🎓</div>
+            <div style={{ backgroundColor: 'hsl(var(--primary))', width: '35px', height: '35px', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <GraduationCap size={20} />
+            </div>
             <span style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Tutores<span className="text-primary">On-Line</span></span>
           </div>
 
@@ -118,7 +123,9 @@ export default function Home() {
 
           {session && (
             <div className="header-actions">
-              <span style={{ fontSize: '0.95rem', color: 'hsl(var(--foreground))', fontWeight: 500 }}>🌐 ES <span style={{ fontSize: '0.7rem' }}>▼</span></span>
+              <span style={{ fontSize: '0.95rem', color: 'hsl(var(--foreground))', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Globe size={16} className="text-gray-500" /> ES <span style={{ fontSize: '0.7rem' }}>▼</span>
+              </span>
               <div style={{ width: '1px', height: '24px', background: 'hsl(var(--border))', margin: '0 0.8rem' }}></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right' }}>
@@ -146,7 +153,7 @@ export default function Home() {
 
             <div className="search-bar-container">
               <div className="search-field">
-                <label>📖 Materia</label>
+                <label className="flex items-center gap-2"><BookOpen size={16} className="text-blue-600" /> Materia</label>
                 <input 
                   type="text" 
                   placeholder="¿Qué quieres aprender?" 
@@ -156,11 +163,11 @@ export default function Home() {
                 />
               </div>
               <div className="search-field">
-                <label>🎓 Nivel</label>
+                <label className="flex items-center gap-2"><GraduationCap size={16} className="text-blue-600" /> Nivel</label>
                 <select><option>Todos los niveles</option></select>
               </div>
               <div className="search-field" style={{ flex: 0.8 }}>
-                <label>📍 Ubicación</label>
+                <label className="flex items-center gap-2"><MapPin size={16} className="text-blue-600" /> Ubicación</label>
                 <input 
                   type="text" 
                   placeholder="Ej. Perú, México..." 
@@ -172,17 +179,17 @@ export default function Home() {
               <div style={{ padding: '0.5rem' }}>
                 <button 
                   className="btn-primary" 
-                  style={{ padding: '0.9rem 1.5rem', width: '100%', fontSize: '1rem' }}
+                  style={{ padding: '0.9rem 1.5rem', width: '100%', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                   onClick={() => window.location.href = `/buscar?q=${encodeURIComponent(materiaQuery)}&loc=${encodeURIComponent(ubicacionQuery)}`}
                 >
-                  🔍 Buscar Tutores
+                  <Search size={20} /> Buscar Tutores
                 </button>
               </div>
             </div>
             
-            <div style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'hsl(var(--muted-foreground))' }}>
-              <span style={{ color: '#22c55e', fontSize: '1.2rem', verticalAlign: 'middle', marginRight: '0.2rem' }}>●</span> 
-              <span style={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}>Más de 1,200</span> tutores disponibles • Clases virtuales y presenciales
+            <div style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'hsl(var(--muted-foreground))', display: 'flex', alignItems: 'center' }}>
+              <User size={16} className="text-green-500 mr-2" /> 
+              <span style={{ color: 'hsl(var(--foreground))', fontWeight: 600, marginRight: '0.3rem' }}>Más de 1,200</span> tutores disponibles • Clases virtuales y presenciales
             </div>
           </div>
           
@@ -194,19 +201,19 @@ export default function Home() {
              
              {/* Insignias Flotantes */}
              <div style={{ position: 'absolute', top: '3rem', left: '-2.5rem', background: 'white', padding: '0.8rem 1.2rem', borderRadius: '0.8rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                <div style={{ color: 'hsl(var(--primary))', fontSize: '1.5rem' }}>💻</div>
+                <div style={{ color: 'hsl(var(--primary))' }}><Video size={32} /></div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.2 }}>Clases<br/>Virtuales<br/><span style={{fontWeight: 'normal', color: 'hsl(var(--muted-foreground))', fontSize: '0.75rem'}}>y Presenciales</span></div>
              </div>
 
              <div style={{ position: 'absolute', top: '4rem', right: '-1.5rem', background: 'white', padding: '1rem 1.5rem', borderRadius: '0.8rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.3rem' }}>
-                   <span style={{ color: '#fbbf24' }}>⭐</span> 4.9
+                   <Star size={24} className="text-yellow-400 fill-current" /> 4.9
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', lineHeight: 1.2, marginTop: '0.3rem' }}>Calificación promedio<br/>de tutores</div>
              </div>
 
              <div style={{ position: 'absolute', bottom: '3rem', right: '-1rem', background: 'white', padding: '0.8rem 1.2rem', borderRadius: '0.8rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                <div style={{ fontSize: '1.5rem' }}>📅</div>
+                <div className="text-blue-600"><Calendar size={32} /></div>
                 <div style={{ fontSize: '0.95rem', fontWeight: 700, lineHeight: 1.2 }}>Reserva<br/>Inmediata</div>
              </div>
           </div>
@@ -218,7 +225,7 @@ export default function Home() {
         <div style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, #4338ca 100%)', borderRadius: '1.5rem', padding: '3rem', color: 'white', display: 'flex', gap: '3rem', alignItems: 'center', boxShadow: '0 20px 40px rgba(67, 56, 202, 0.2)' }} className="split-screen">
            <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '2rem' }}>🧠</span>
+                <MessageCircle size={32} />
                 <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Lenux</h2>
               </div>
               <p style={{ opacity: 0.9, fontSize: '1.1rem', marginBottom: '2rem', lineHeight: 1.6 }}>
@@ -263,22 +270,22 @@ export default function Home() {
               <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '2.5rem' }}>¿Por qué elegir <span className="text-primary">TutoresOn-Line</span>?</h2>
               <div className="benefits-grid">
                  <div className="feature-card">
-                    <div className="feature-icon">👩‍🏫</div>
+                    <div className="feature-icon"><GraduationCap size={32} className="text-blue-600" /></div>
                     <div className="feature-title">Tutores Calificados</div>
                     <div className="feature-text">Profesionales verificados y calificados</div>
                  </div>
                  <div className="feature-card">
-                    <div className="feature-icon">📅</div>
+                    <div className="feature-icon"><Calendar size={32} className="text-blue-600" /></div>
                     <div className="feature-title">Reserva Fácil y Rápida</div>
                     <div className="feature-text">Agenda en tiempo real, como Uber</div>
                  </div>
                  <div className="feature-card">
-                    <div className="feature-icon">💻</div>
+                    <div className="feature-icon"><Video size={32} className="text-blue-600" /></div>
                     <div className="feature-title">Videollamadas Integradas</div>
                     <div className="feature-text">Clases virtuales con un clic</div>
                  </div>
                  <div className="feature-card">
-                    <div className="feature-icon">🛡️</div>
+                    <div className="feature-icon"><Shield size={32} className="text-blue-600" /></div>
                     <div className="feature-title">Pago Seguro</div>
                     <div className="feature-text">Tu información y pagos protegidos</div>
                  </div>
@@ -322,7 +329,7 @@ export default function Home() {
 
          <div className="tutors-grid">
             {tutores.length === 0 ? (
-               <p style={{ color: 'hsl(var(--muted-foreground))' }}>Conectando a Supabase para cargar tutores reales...</p>
+               <p style={{ color: 'hsl(var(--muted-foreground))' }}>Conectando a BD para cargar tutores reales...</p>
             ) : tutores.map((t) => {
                const materiaPrinc = t.materias[0];
                // Simulamos cantidad de clases para demostración
@@ -345,7 +352,7 @@ export default function Home() {
                            </div>
                            
                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.9rem' }}>
-                              <span style={{ color: '#fbbf24' }}>⭐</span> 
+                              <Star size={16} className="text-yellow-400 fill-current" /> 
                               <span style={{ fontWeight: 700 }}>{t.reputacionPromedio}</span> 
                               <span style={{ color: 'hsl(var(--muted-foreground))' }}>( {classNum} clases )</span>
                            </div>
@@ -353,7 +360,7 @@ export default function Home() {
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem' }}>
                            <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <span style={{ fontSize: '1.1rem' }}>{t.usuario.nombreCompleto.includes('Ana') ? '💻' : '📍'}</span>
+                              {t.usuario.nombreCompleto.includes('Ana') ? <Video size={16} className="text-gray-500" /> : <MapPin size={16} className="text-gray-500" />}
                               {t.usuario.nombreCompleto.includes('Ana') ? 'Virtual' : `A ${t.usuario.nombreCompleto.includes('Carlos') ? 2 : 5} km`}
                            </div>
                            <div style={{ textAlign: 'right' }}>
