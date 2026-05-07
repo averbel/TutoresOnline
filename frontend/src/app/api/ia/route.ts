@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server';
 
 type Modo = 'asistente' | 'recomendador' | 'resumen' | 'soporte';
 
-interface MensajeChat {
-  role: 'user' | 'assistant';
-  content: string;
-}
 
 const PROMPTS_SISTEMA: Record<Modo, string> = {
   asistente: `Eres Lenux, asistente educativo de TutoresOnLine. 
