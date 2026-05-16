@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Video, Check, X, User } from 'lucide-react';
+import { GraduationCap, Video, Check, X, User, Calculator, Languages, Atom, FlaskConical, Terminal, Dna, Brain, TrendingUp, Palette, Music, BookOpen, Book } from 'lucide-react';
 
 export default function MiPerfil() {
   const [session, setSession] = useState<{ id?: string, nombreCompleto: string; email: string; rol: string } | null>(null);
@@ -136,6 +136,21 @@ export default function MiPerfil() {
 
   const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
+  const cursosFicticios = [
+    { id: 'matematicas', nombre: 'Matemáticas', nivel: 'Primaria - Universidad', icono: Calculator, color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', descripcion: 'Álgebra, Cálculo, Geometría y más' },
+    { id: 'ingles', nombre: 'Inglés', nivel: 'Básico - Avanzado', icono: Languages, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', descripcion: 'Gramática, Conversación, TOEFL' },
+    { id: 'fisica', nombre: 'Física', nivel: 'Secundaria - Universidad', icono: Atom, color: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)', descripcion: 'Mecánica, Termodinámica, Óptica' },
+    { id: 'quimica', nombre: 'Química', nivel: 'Secundaria - Universidad', icono: FlaskConical, color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', descripcion: 'Orgánica, Inorgánica, Bioquímica' },
+    { id: 'programacion', nombre: 'Programación', nivel: 'Todos los niveles', icono: Terminal, color: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', descripcion: 'Python, JavaScript, React, Node.js' },
+    { id: 'historia', nombre: 'Historia', nivel: 'Primaria - Universidad', icono: BookOpen, color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', descripcion: 'Universal, América Latina, Perú' },
+    { id: 'biologia', nombre: 'Biología', nivel: 'Secundaria - Universidad', icono: Dna, color: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', descripcion: 'Genética, Ecología, Anatomía' },
+    { id: 'literatura', nombre: 'Literatura', nivel: 'Todos los niveles', icono: Book, color: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', descripcion: 'Clásica, Contemporánea, Poesía' },
+    { id: 'filosofia', nombre: 'Filosofía', nivel: 'Bachillerato - Universidad', icono: Brain, color: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', descripcion: 'Ética, Lógica, Historia de la Filosofía' },
+    { id: 'economia', nombre: 'Economía', nivel: 'Secundaria - Universidad', icono: TrendingUp, color: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', descripcion: 'Micro, Macro, Finanzas' },
+    { id: 'arte', nombre: 'Arte', nivel: 'Todos los niveles', icono: Palette, color: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)', descripcion: 'Dibujo, Pintura, Historia del Arte' },
+    { id: 'musica', nombre: 'Música', nivel: 'Todos los niveles', icono: Music, color: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', descripcion: 'Teoría, Instrumento, Canto' },
+  ];
+
   if (!session) return <div style={{ textAlign: 'center', padding: '4rem' }}>Cargando datos de seguridad...</div>;
 
   const isTutor = session.rol === 'TUTOR';
@@ -174,6 +189,50 @@ export default function MiPerfil() {
             <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
           </div>
         )}
+
+        {/* CARRUSEL DE CLASES DISPONIBLES */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <BookOpen size={24} style={{ color: 'hsl(var(--primary))' }} /> Clases Disponibles
+          </h3>
+          <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Explora nuestras materias y encuentra al tutor perfecto para ti
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem', scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}>
+            {cursosFicticios.map(curso => {
+              const IconComponent = curso.icono;
+              return (
+                <a
+                  key={curso.id}
+                  href={`/buscar?q=${encodeURIComponent(curso.nombre)}`}
+                  style={{ textDecoration: 'none', color: 'inherit', minWidth: '180px', maxWidth: '180px', flexShrink: 0 }}
+                >
+                  <div
+                    className="glass-card"
+                    style={{
+                      padding: '1.2rem',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.6rem',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: curso.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                      <IconComponent size={24} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', textAlign: 'center' }}>{curso.nombre}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'hsl(var(--muted-foreground))', textAlign: 'center', padding: '0.2rem 0.6rem', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '1rem', whiteSpace: 'nowrap' }}>{curso.nivel}</div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: isTutor ? 'minmax(400px, 1fr) 1fr' : '1fr', gap: '2rem', alignItems: 'start' }}>
 
