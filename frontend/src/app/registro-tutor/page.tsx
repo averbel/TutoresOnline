@@ -3,18 +3,27 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+type MateriaOption = { id: string; nombre: string; nivelEducativo: string };
+
 export default function RegistroTutor() {
   const [session, setSession] = useState<Record<string, unknown> | null>(null);
+  const [materias, setMaterias] = useState<MateriaOption[]>([]);
   const [formData, setFormData] = useState({
-    nombreCompleto: '', email: '', passwordHash: '', experiencia: '', especialidad: ''
+    nombreCompleto: '', email: '', password: '', experiencia: '', especialidad: '',
+    materias: [] as { materiaId: string; tarifaPorHora: number }[]
   });
   const [status, setStatus] = useState<null | 'loading' | 'success' | 'error'>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (savedUser) setSession(JSON.parse(savedUser));
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => { if (data.status === 'success') setSession(data.data); })
+      .catch(() => {});
+    fetch('/api/materias')
+      .then(res => res.json())
+      .then(data => { if (data.status === 'success') setMaterias(data.data); })
+      .catch(() => {});
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,8 +132,59 @@ export default function RegistroTutor() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Materias que impartes</label>
+                  <select
+                    style={inputStyle}
+                    value=""
+                    onChange={(e) => {
+                      if (!e.target.value) return;
+                      const exists = formData.materias.find(m => m.materiaId === e.target.value);
+                      if (!exists) {
+                        setFormData({
+                          ...formData,
+                          materias: [...formData.materias, { materiaId: e.target.value, tarifaPorHora: 50 }]
+                        });
+                      }
+                    }}
+                  >
+                    <option value="">Seleccionar materia...</option>
+                    {materias.map(m => (
+                      <option key={m.id} value={m.id}>{m.nombre} ({m.nivelEducativo})</option>
+                    ))}
+                  </select>
+                  {formData.materias.length > 0 && (
+                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {formData.materias.map((m, idx) => {
+                        const mat = materias.find(x => x.id === m.materiaId);
+                        return (
+                          <div key={m.materiaId} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f3f0ff', padding: '0.5rem', borderRadius: '0.5rem' }}>
+                            <span style={{ flex: 1, fontWeight: 600 }}>{mat?.nombre || m.materiaId}</span>
+                            <span style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>S/</span>
+                            <input
+                              type="number" min="1" step="5"
+                              style={{ width: '80px', padding: '0.3rem', borderRadius: '0.3rem', border: '1px solid hsl(var(--border))' }}
+                              value={m.tarifaPorHora}
+                              onChange={(e) => {
+                                const newMaterias = [...formData.materias];
+                                newMaterias[idx] = { ...newMaterias[idx], tarifaPorHora: parseInt(e.target.value) || 0 };
+                                setFormData({ ...formData, materias: newMaterias });
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setFormData({ ...formData, materias: formData.materias.filter((_, i) => i !== idx) })}
+                              style={{ background: '#fee2e2', border: 'none', borderRadius: '0.3rem', padding: '0.2rem 0.5rem', cursor: 'pointer', color: '#ef4444' }}
+                            >✕</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Crea tu Contraseña Maestra</label>
-                  <input required type="password" style={inputStyle} value={formData.passwordHash} onChange={e=>setFormData({...formData, passwordHash: e.target.value})}/>
+                  <input required type="password" style={inputStyle} value={formData.password} onChange={e=>setFormData({...formData, password: e.target.value})}/>
                 </div>
 
                 {status === 'error' && (

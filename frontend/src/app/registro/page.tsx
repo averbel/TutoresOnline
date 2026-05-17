@@ -7,7 +7,7 @@ export default function Registro() {
   const [formData, setFormData] = useState({
     nombreCompleto: '',
     email: '',
-    passwordHash: '',
+    password: '',
     gradoAcademico: 'Universidad'
   });
   const [status, setStatus] = useState<null | 'loading' | 'success' | 'error'>(null);
@@ -116,14 +116,14 @@ export default function Registro() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-                <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>Contraseña (Ficticia)</label>
+                <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>Contraseña</label>
                 <input 
                   type="password" 
                   required 
                   style={inputStyle}
                   placeholder="********"
-                  value={formData.passwordHash}
-                  onChange={(e) => setFormData({...formData, passwordHash: e.target.value})}
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
                 />
               </div>
             </div>

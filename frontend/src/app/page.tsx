@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
-    passwordHash: ''
+    password: ''
   });
   const [status, setStatus] = useState<null | 'loading' | 'success' | 'error'>(null);
 
@@ -25,8 +25,6 @@ export default function Login() {
       
       if (response.ok && result.status === 'success') {
         setStatus('success');
-        localStorage.setItem('user', JSON.stringify(result.data));
-        
         setTimeout(() => {
             window.location.href = '/inicio';
         }, 1000);
@@ -112,7 +110,7 @@ export default function Login() {
                 </div>
                 <input 
                   type="password" required style={inputStyle} placeholder="••••••••••••"
-                  value={formData.passwordHash} onChange={(e) => setFormData({...formData, passwordHash: e.target.value})}
+                  value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})}
                   onFocus={(e) => e.target.style.borderColor = 'hsl(var(--primary))'}
                   onBlur={(e) => e.target.style.borderColor = 'hsl(var(--border))'}
                 />

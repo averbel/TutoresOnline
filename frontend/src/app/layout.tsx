@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ThemeWrapper from "../components/ThemeWrapper";
+import ToastContainer from "../components/Toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body>
         <ThemeWrapper>
           {children}
+          <ToastContainer />
         </ThemeWrapper>
       </body>
     </html>

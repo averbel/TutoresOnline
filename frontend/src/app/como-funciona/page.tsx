@@ -7,9 +7,10 @@ export default function ComoFunciona() {
   const [session, setSession] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (savedUser) setSession(JSON.parse(savedUser));
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => { if (data.status === 'success') setSession(data.data); })
+      .catch(() => {});
   }, []);
 
   return (
@@ -56,15 +57,15 @@ export default function ComoFunciona() {
               </p>
             </div>
 
-            <div style={{ background: 'white', padding: '2.5rem', borderRadius: '1rem', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid hsl(var(--border))' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                 <span style={{ fontSize: '2rem' }}>💳</span>
-                 <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>2. Transacciones Cero Riesgo</h3>
-              </div>
-              <p style={{ color: 'hsl(var(--foreground))', opacity: 0.8, lineHeight: '1.6' }}>
-                Retenemos el pago de forma segura usando Supabase Encrypted Tunnels. El maestro no recibe tus fondos hasta que no termina la hora académica prometida y calificas su sesión.
-              </p>
-            </div>
+             <div style={{ background: 'white', padding: '2.5rem', borderRadius: '1rem', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid hsl(var(--border))' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '2rem' }}>📅</span>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>2. Reserva Inmediata</h3>
+               </div>
+               <p style={{ color: 'hsl(var(--foreground))', opacity: 0.8, lineHeight: '1.6' }}>
+                 Agenda tus sesiones de tutoría al instante. Elige el horario que mejor se adapte a ti y recibe confirmación automática.
+               </p>
+             </div>
 
              <div style={{ background: 'white', padding: '2.5rem', borderRadius: '1rem', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid hsl(var(--border))' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
