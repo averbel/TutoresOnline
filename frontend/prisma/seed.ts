@@ -1,10 +1,11 @@
+import "dotenv/config";
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { hashSync } from 'bcryptjs';
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres.aadfrmhsazyaftyrsrwv:rN6vr7w872oKQrpw@aws-1-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true',
+  connectionString: process.env.DATABASE_URL || process.env.DIRECT_URL,
   ssl: { rejectUnauthorized: false }
 });
 const adapter = new PrismaPg(pool);
@@ -83,7 +84,7 @@ async function main() {
     }
   }
 
-  const estudiante = await prisma.usuario.upsert({
+  await prisma.usuario.upsert({
     where: { email: 'estudiante@test.com' },
     update: {},
     create: {
