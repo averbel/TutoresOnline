@@ -21,6 +21,7 @@ export default function MiPerfil() {
   const [isSaving, setIsSaving] = useState(false);
   const [activeCallId, setActiveCallId] = useState<string | null>(null);
   const [flashActivo, setFlashActivo] = useState(false);
+  const [tutoresDisponibles, setTutoresDisponibles] = useState(0);
   const [resenas, setResenas] = useState<ResenaData[]>([]);
   const [showResenaForm, setShowResenaForm] = useState<string | null>(null);
   const [resenaRating, setResenaRating] = useState(5);
@@ -55,12 +56,14 @@ export default function MiPerfil() {
         if (solData.status === 'success') setSolicitudes(solData.data);
         if (flashData.status === 'success') setResenas(flashData.data);
       } else {
-        const [solRes, resRes] = await Promise.all([
+        const [solRes, tutoresRes] = await Promise.all([
           fetch(`/api/estudiantes/${user.id}/solicitudes`),
-          fetch(`/api/tutores/${user.id}/resenas`),
+          fetch(`/api/usuarios/tutores?limit=1`),
         ]);
         const solData = await solRes.json();
+        const tutoresData = await tutoresRes.json();
         if (solData.status === 'success') setSolicitudes(solData.data);
+        if (tutoresData.status === 'success') setTutoresDisponibles(tutoresData.meta.total);
       }
     } catch (error) { console.error(error); }
     finally { setLoading(false); }
@@ -174,6 +177,13 @@ export default function MiPerfil() {
           <div className="glass-card mb-8">
             <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Bienvenido, {session.nombreCompleto}</h1>
             <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.15)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <BookOpen size={24} style={{ color: 'hsl(var(--primary))' }} />
+              <div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', lineHeight: 1 }}>{tutoresDisponibles}</div>
+                <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>Tutores Disponibles</div>
+              </div>
+            </div>
           </div>
         )}
 
