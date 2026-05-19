@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Video, Check, X, User, Star, Zap, Calendar, BookOpen, Navigation } from 'lucide-react';
+import { GraduationCap, Video, Check, X, User, Star, Zap, Calendar, BookOpen, Navigation, CreditCard, Phone } from 'lucide-react';
 
 type SessionData = { id: string; nombreCompleto: string; email: string; rol: string };
 type ResenaData = { id: string; tutoriaId: string; calificacionEstrellas: number; feedback?: string; tutoria: { estudiante: { usuario: { nombreCompleto: string } }; materia: { nombre: string } } };
@@ -37,7 +37,8 @@ export default function MiPerfil() {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
   };
 
-  const [flashTutores, setFlashTutores] = useState<{ usuarioId: string; usuario: { nombreCompleto: string }; reputacionPromedio: number; materias: { materia: { id: string; nombre: string }; tarifaPorHora: number }[] }[]>([]);
+  const [flashTutores, setFlashTutores] = useState<{ usuarioId: string; usuario: { nombreCompleto: string; email: string }; reputacionPromedio: number; materias: { materia: { id: string; nombre: string }; tarifaPorHora: number }[] }[]>([]);
+  const [demoTutor, setDemoTutor] = useState<{ usuarioId: string; usuario: { nombreCompleto: string; email: string }; reputacionPromedio: number; materias: { materia: { id: string; nombre: string }; tarifaPorHora: number }[] } | null>(null);
   const [flashBookingLoading, setFlashBookingLoading] = useState<string | null>(null);
   const [buscandoFlash, setBuscandoFlash] = useState(false);
 
@@ -69,18 +70,33 @@ export default function MiPerfil() {
         if (dispData.status === 'success') setDisponibilidades(dispData.data);
         if (solData.status === 'success') setSolicitudes(solData.data);
         if (flashData.status === 'success') setResenas(flashData.data);
+
+        if (user.email === 'carlos@test.com') {
+          fetch('/api/tutores/flash', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activo: true })
+          }).then(() => setFlashActivo(true));
+        }
       } else {
-        const [solRes, tutoresRes, flashRes] = await Promise.all([
+        const [solRes, tutoresRes] = await Promise.all([
           fetch(`/api/estudiantes/${user.id}/solicitudes`),
-          fetch(`/api/usuarios/tutores?limit=1`),
-          fetch(`/api/tutores/flash`),
+          fetch(`/api/usuarios/tutores?limit=20`),
         ]);
         const solData = await solRes.json();
         const tutoresData = await tutoresRes.json();
-        const flashData = await flashRes.json();
         if (solData.status === 'success') setSolicitudes(solData.data);
-        if (tutoresData.status === 'success') setTutoresDisponibles(tutoresData.meta.total);
-        if (flashData.status === 'success') setFlashTutores(flashData.data || []);
+        if (tutoresData.status === 'success') {
+          setTutoresDisponibles(tutoresData.meta.total);
+          const allTutores: any[] = tutoresData.data || [];
+          const carlos = allTutores.find((t: any) => t.usuario.email === 'carlos@test.com');
+          if (carlos) setDemoTutor(carlos);
+
+          const flash = allTutores.filter((t: any) => t.activoAhoraFlash);
+          if (carlos && !flash.find((f: any) => f.usuarioId === carlos.usuarioId)) {
+            flash.push(carlos);
+          }
+          setFlashTutores(flash);
+        }
       }
     } catch (error) { console.error(error); }
     finally { setLoading(false); }
@@ -100,35 +116,45 @@ export default function MiPerfil() {
             .then(r => r.json())
             .then(data => {
               if (data.status === 'success') {
-                setFlashTutores(data.data);
-                if (data.data.length === 0) addToast('No hay tutores Flash cerca de ti', 'info');
+                let found = data.data || [];
+                if (found.length === 0 && demoTutor) found = [demoTutor];
+                setFlashTutores(found);
+                if (found.length === 0) addToast('No hay tutores Flash cerca de ti', 'info');
               }
             })
             .catch(() => addToast('Error al buscar tutores', 'error'))
             .finally(() => setBuscandoFlash(false));
         },
         () => {
-          fetch(`/api/tutores/flash`)
-            .then(r => r.json())
-            .then(data => {
-              if (data.status === 'success') {
-                setFlashTutores(data.data);
-                if (data.data.length === 0) addToast('No hay tutores Flash disponibles', 'info');
-              }
-            })
-            .finally(() => setBuscandoFlash(false));
+          if (demoTutor) {
+            setFlashTutores([demoTutor]);
+            setBuscandoFlash(false);
+          } else {
+            fetch(`/api/tutores/flash`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.status === 'success') {
+                  let found = data.data || [];
+                  if (found.length === 0 && demoTutor) found = [demoTutor];
+                  setFlashTutores(found);
+                }
+              })
+              .finally(() => setBuscandoFlash(false));
+          }
         }
       );
     } else {
-      fetch(`/api/tutores/flash`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 'success') {
-            setFlashTutores(data.data);
-            if (data.data.length === 0) addToast('No hay tutores Flash disponibles', 'info');
-          }
-        })
-        .finally(() => setBuscandoFlash(false));
+      if (demoTutor) {
+        setFlashTutores([demoTutor]);
+        setBuscandoFlash(false);
+      } else {
+        fetch(`/api/tutores/flash`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === 'success') setFlashTutores(data.data || []);
+          })
+          .finally(() => setBuscandoFlash(false));
+      }
     }
   };
 
@@ -144,6 +170,8 @@ export default function MiPerfil() {
       if (res.ok && data.status === 'success') {
         addToast('¡Tutoría Flash iniciada! Ve a "Próximas Tutorías" para unirte.', 'success');
         setFlashTutores(prev => prev.filter(t => t.usuarioId !== tutorId));
+        const s = session;
+        if (s) fetchUserData(s);
       } else {
         addToast(data.message || 'Error al reservar flash', 'error');
       }
@@ -277,6 +305,9 @@ export default function MiPerfil() {
               </button>
             </div>
           )}
+          <Link href="/suscripcion" style={{ display: 'block', marginTop: '1rem', padding: '0.5rem', background: 'hsl(var(--primary))', color: 'white', borderRadius: '0.5rem', textDecoration: 'none', fontWeight: 700, fontSize: '0.85rem' }}>
+            <CreditCard size={14} style={{ display: 'inline', marginRight: '0.3rem' }} /> Suscripción
+          </Link>
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ padding: '1rem', background: 'hsl(var(--primary))', color: 'white', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Panel Principal</div>
@@ -286,50 +317,73 @@ export default function MiPerfil() {
 
       <main style={{ flex: 1, padding: '2rem', maxWidth: '100%', position: 'relative' }}>
         {!isTutor && (
-          <div className="glass-card mb-8">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Bienvenido, {session.nombreCompleto}</h1>
-                <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
+          <>
+            <div className="glass-card mb-8">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Bienvenido, {session.nombreCompleto}</h1>
+                  <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
+                </div>
+                <button onClick={buscarFlashAhora} disabled={buscandoFlash}
+                  style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+                  <Zap size={18} /> {buscandoFlash ? 'Buscando...' : 'Buscar Tutor Ahora'}
+                </button>
               </div>
-              <button onClick={buscarFlashAhora} disabled={buscandoFlash}
-                style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
-                <Zap size={18} /> {buscandoFlash ? 'Buscando...' : 'Buscar Tutor Ahora'}
-              </button>
-            </div>
-            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.15)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <BookOpen size={24} style={{ color: 'hsl(var(--primary))' }} />
-              <div>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', lineHeight: 1 }}>{tutoresDisponibles}</div>
-                <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>Tutores Disponibles</div>
+              <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.15)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <BookOpen size={24} style={{ color: 'hsl(var(--primary))' }} />
+                <div>
+                  <div style={{ fontSize: '2rem', fontWeight: 'bold', lineHeight: 1 }}>{tutoresDisponibles}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>Tutores Disponibles</div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {!isTutor && flashTutores.length > 0 && (
-          <div className="glass-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #22c55e' }}>
-            <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Zap size={20} style={{ color: '#22c55e' }} /> Tutores Disponibles Ahora
-            </h3>
-            <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-              {flashTutores.map(t => {
-                const materiaPrinc = t.materias[0];
-                return (
-                  <div key={t.usuarioId} style={{ minWidth: '220px', background: 'rgba(0,0,0,0.2)', borderRadius: '0.8rem', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ fontWeight: 'bold' }}>{t.usuario.nombreCompleto}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>{materiaPrinc?.materia?.nombre || 'General'}</div>
-                    <div style={{ fontSize: '0.8rem' }}>{Array.from({ length: 5 }, (_, i) => <span key={i} style={{ color: i < Math.round(t.reputacionPromedio) ? '#f59e0b' : '#6b7280' }}>★</span>)}</div>
-                    <button onClick={() => handleFlashBooking(t.usuarioId, materiaPrinc?.materia?.id || '')}
-                      disabled={flashBookingLoading === t.usuarioId}
-                      style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
-                      {flashBookingLoading === t.usuarioId ? 'Reservando...' : 'Reservar Ahora'}
-                    </button>
+            {demoTutor && (
+              <div className="glass-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #22c55e', background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.02) 100%)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                      <span style={{ background: '#22c55e', width: '10px', height: '10px', borderRadius: '50%', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                      <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>Carlos Mendoza — Disponible Ahora</h3>
+                    </div>
+                    <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '0.9rem' }}>
+                      📍 Matemáticas · {Array.from({ length: 5 }, (_, i) => <span key={i} style={{ color: i < Math.round(demoTutor.reputacionPromedio) ? '#f59e0b' : '#6b7280' }}>★</span>)} {demoTutor.reputacionPromedio.toFixed(1)}
+                    </p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  <button onClick={() => handleFlashBooking(demoTutor.usuarioId, demoTutor.materias[0]?.materia?.id || '')}
+                    disabled={flashBookingLoading === demoTutor.usuarioId}
+                    style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.8rem 2rem', borderRadius: '0.5rem', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Zap size={20} /> {flashBookingLoading === demoTutor.usuarioId ? 'Reservando...' : 'Reservar Ahora'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {flashTutores.length > 0 && (
+              <div className="glass-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #22c55e' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Zap size={20} style={{ color: '#22c55e' }} /> Tutores en Línea Ahora
+                </h3>
+                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                  {flashTutores.filter(t => !demoTutor || t.usuarioId !== demoTutor.usuarioId).map(t => {
+                    const materiaPrinc = t.materias[0];
+                    return (
+                      <div key={t.usuarioId} style={{ minWidth: '220px', background: 'rgba(0,0,0,0.2)', borderRadius: '0.8rem', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div style={{ fontWeight: 'bold' }}>{t.usuario.nombreCompleto}</div>
+                        <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>{materiaPrinc?.materia?.nombre || 'General'}</div>
+                        <div style={{ fontSize: '0.8rem' }}>{Array.from({ length: 5 }, (_, i) => <span key={i} style={{ color: i < Math.round(t.reputacionPromedio) ? '#f59e0b' : '#6b7280' }}>★</span>)}</div>
+                        <button onClick={() => handleFlashBooking(t.usuarioId, materiaPrinc?.materia?.id || '')}
+                          disabled={flashBookingLoading === t.usuarioId}
+                          style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
+                          {flashBookingLoading === t.usuarioId ? 'Reservando...' : 'Reservar Ahora'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: isTutor ? 'minmax(400px, 1fr) 1fr' : '1fr', gap: '2rem', alignItems: 'start' }}>
@@ -365,59 +419,65 @@ export default function MiPerfil() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div className="glass-card" style={{ borderLeft: '4px solid hsl(var(--primary))' }}>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                Próximas Tutorías
+                {isTutor ? 'Sala de Espera — Videollamada' : 'Próximas Tutorías'}
               </h3>
               {loading ? (<p>Cargando...</p>) : proximas.length === 0 ? (
                 <p style={{ color: 'hsl(var(--muted-foreground))' }}>No tienes reuniones programadas.</p>
               ) : (
-                proximas.map(sol => (
-                  <div key={sol.id} style={{ marginBottom: '1rem', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontWeight: 'bold', color: 'hsl(var(--primary))', fontSize: '1.1rem' }}>{sol.materia?.nombre || 'Desconocida'}</div>
-                        <div style={{ fontSize: '0.9rem', marginTop: '0.2rem' }}>
-                          {isTutor ? `Estudiante: ${sol.estudiante?.usuario?.nombreCompleto}` : `Tutor: ${sol.tutor?.usuario?.nombreCompleto}`}
+                proximas.map(sol => {
+                  const puede = puedeIngresarAVideollamada(sol.fechaInicio, sol.fechaFin);
+                  const tiempo = tiempoParaInicio(sol.fechaInicio);
+                  return (
+                    <div key={sol.id} style={{
+                      marginBottom: '1rem', backgroundColor: 'rgba(0,0,0,0.2)', padding: '1.2rem', borderRadius: '8px',
+                      borderLeft: puede ? '3px solid #22c55e' : '3px solid transparent'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', color: 'hsl(var(--primary))', fontSize: '1.1rem' }}>{sol.materia?.nombre || 'Desconocida'}</div>
+                          <div style={{ fontSize: '0.9rem', marginTop: '0.2rem' }}>
+                            {isTutor ? `Estudiante: ${sol.estudiante?.usuario?.nombreCompleto}` : `Tutor: ${sol.tutor?.usuario?.nombreCompleto}`}
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>{new Date(sol.fechaInicio).toLocaleString()}</div>
+                          {isTutor && (
+                            <div style={{ fontSize: '0.8rem', marginTop: '0.3rem', color: puede ? '#22c55e' : '#f59e0b', fontWeight: 600 }}>
+                              {puede ? '🟢 Estudiante puede conectarse' : `⏳ Esperando hora de inicio${tiempo ? ` (${tiempo})` : ''}`}
+                            </div>
+                          )}
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>{new Date(sol.fechaInicio).toLocaleString()}</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        {(() => {
-                          const puede = puedeIngresarAVideollamada(sol.fechaInicio, sol.fechaFin);
-                          const tiempo = tiempoParaInicio(sol.fechaInicio);
-                          return (
-                            <>
-                              {!puede && tiempo && (
-                                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', fontWeight: 600 }}>
-                                  Disponible {tiempo}
-                                </span>
-                              )}
-                              <button onClick={() => { if (puede) setActiveCallId(activeCallId === sol.id ? null : sol.id); }}
-                                disabled={!puede}
-                                className="btn-primary"
-                                style={{
-                                  padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.3rem',
-                                  opacity: puede ? 1 : 0.5, cursor: puede ? 'pointer' : 'not-allowed'
-                                }}>
-                                <Video size={16} /> {activeCallId === sol.id ? 'Cerrar' : 'Ingresar'}
-                              </button>
-                            </>
-                          );
-                        })()}
-                        {isTutor && (
-                          <button onClick={() => completarTutoria(sol.id)} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>
-                            Completar
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          {tiempo && !puede && (
+                            <span style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                              {tiempo}
+                            </span>
+                          )}
+                          <button onClick={() => { if (puede) setActiveCallId(activeCallId === sol.id ? null : sol.id); }}
+                            disabled={!puede}
+                            className="btn-primary"
+                            style={{
+                              padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem',
+                              opacity: puede ? 1 : 0.5, cursor: puede ? 'pointer' : 'not-allowed',
+                              animation: puede ? 'pulse 2s infinite' : 'none',
+                              fontSize: '0.95rem'
+                            }}>
+                            <Video size={18} /> {activeCallId === sol.id ? 'Cerrar' : puede ? 'Conectar Ahora' : 'Esperar'}
                           </button>
-                        )}
+                          {isTutor && (
+                            <button onClick={() => completarTutoria(sol.id)} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>
+                              Completar
+                            </button>
+                          )}
+                        </div>
                       </div>
+                      {activeCallId === sol.id && sol.urlEncuentro && (
+                        <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.2)' }}>
+                          <iframe src={`${sol.urlEncuentro}?config.prejoinPageEnabled=false`} allow="camera; microphone; fullscreen; display-capture; autoplay"
+                            style={{ width: '100%', height: '400px', border: 'none' }} />
+                        </div>
+                      )}
                     </div>
-                    {activeCallId === sol.id && sol.urlEncuentro && (
-                      <div style={{ marginTop: '1rem', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.2)' }}>
-                        <iframe src={`${sol.urlEncuentro}?config.prejoinPageEnabled=false`} allow="camera; microphone; fullscreen; display-capture; autoplay"
-                          style={{ width: '100%', height: '400px', border: 'none' }} />
-                      </div>
-                    )}
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
@@ -460,7 +520,7 @@ export default function MiPerfil() {
                           {isTutor ? `Estudiante: ${s.estudiante?.usuario?.nombreCompleto}` : `Tutor: ${s.tutor?.usuario?.nombreCompleto}`}
                         </div>
                       </div>
-                      {!isTutor && !completadas.find(r => r.id === s.id) && (
+                      {!isTutor && (
                         <button onClick={() => setShowResenaForm(showResenaForm === s.id ? null : s.id)}
                           style={{ background: 'transparent', border: '1px solid hsl(var(--primary))', color: 'hsl(var(--primary))', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 600 }}>
                           <Star size={16} style={{ display: 'inline' }} /> Calificar
@@ -513,7 +573,7 @@ export default function MiPerfil() {
             {toasts.map(t => (
               <div key={t.id} style={{
                 padding: '0.8rem 1.2rem', borderRadius: '0.5rem', color: 'white', fontWeight: 600, fontSize: '0.9rem',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)', animation: 'fadeIn 0.3s',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                 background: t.type === 'success' ? '#22c55e' : t.type === 'error' ? '#ef4444' : '#3b82f6'
               }}>
                 {t.message}
