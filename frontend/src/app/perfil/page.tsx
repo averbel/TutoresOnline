@@ -147,6 +147,25 @@ export default function MiPerfil() {
   const proximas = solicitudes.filter(s => s.estado === 'ACEPTADA');
   const completadas = solicitudes.filter(s => s.estado === 'COMPLETADA');
 
+  const puedeIngresarAVideollamada = (fechaInicio: string, fechaFin: string) => {
+    const ahora = new Date();
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+    const quinceMinAntes = new Date(inicio.getTime() - 15 * 60000);
+    return ahora >= quinceMinAntes && ahora <= fin;
+  };
+
+  const tiempoParaInicio = (fechaInicio: string) => {
+    const ahora = new Date();
+    const inicio = new Date(fechaInicio);
+    const diff = inicio.getTime() - ahora.getTime();
+    if (diff <= 0) return null;
+    const horas = Math.floor(diff / 3600000);
+    const minutos = Math.floor((diff % 3600000) / 60000);
+    if (horas > 0) return `en ${horas}h ${minutos}m`;
+    return `en ${minutos}m`;
+  };
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'row' }}>
       <aside style={{ width: '300px', backgroundColor: 'rgba(0,0,0,0.3)', borderRight: '1px solid hsl(var(--border))', padding: '2rem' }}>
@@ -235,10 +254,29 @@ export default function MiPerfil() {
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>{new Date(sol.fechaInicio).toLocaleString()}</div>
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button onClick={() => setActiveCallId(activeCallId === sol.id ? null : sol.id)} className="btn-primary" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                          <Video size={16} /> {activeCallId === sol.id ? 'Cerrar' : 'Video'}
-                        </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {(() => {
+                          const puede = puedeIngresarAVideollamada(sol.fechaInicio, sol.fechaFin);
+                          const tiempo = tiempoParaInicio(sol.fechaInicio);
+                          return (
+                            <>
+                              {!puede && tiempo && (
+                                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', fontWeight: 600 }}>
+                                  Disponible {tiempo}
+                                </span>
+                              )}
+                              <button onClick={() => { if (puede) setActiveCallId(activeCallId === sol.id ? null : sol.id); }}
+                                disabled={!puede}
+                                className="btn-primary"
+                                style={{
+                                  padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.3rem',
+                                  opacity: puede ? 1 : 0.5, cursor: puede ? 'pointer' : 'not-allowed'
+                                }}>
+                                <Video size={16} /> {activeCallId === sol.id ? 'Cerrar' : 'Ingresar'}
+                              </button>
+                            </>
+                          );
+                        })()}
                         {isTutor && (
                           <button onClick={() => completarTutoria(sol.id)} style={{ background: '#2ecc71', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>
                             Completar

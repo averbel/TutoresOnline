@@ -28,10 +28,14 @@ export default function BuscarTutores() {
   const [filtroRepMin, setFiltroRepMin] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const defaultFecha = (() => {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  })();
   const [bookingTutor, setBookingTutor] = useState<TutorData | null>(null);
   const [bookingMateriaId, setBookingMateriaId] = useState('');
   const [bookingFecha, setBookingFecha] = useState('');
-  const [bookingHoraInicio, setBookingHoraInicio] = useState('');
+  const [bookingHoraInicio, setBookingHoraInicio] = useState('10:00');
   const [bookingDuracion, setBookingDuracion] = useState('60');
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
   const [bookingMsg, setBookingMsg] = useState('');
@@ -224,7 +228,7 @@ export default function BuscarTutores() {
                           S/ {materiaPrinc?.tarifaPorHora || 50}<span style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>/hr</span>
                         </div>
                         {session?.rol === 'ESTUDIANTE' && (
-                          <button onClick={() => { setBookingTutor(t); setBookingStatus(null); setBookingMsg(''); setBookingMateriaId(materiaPrinc?.materia?.id || ''); }}
+                          <button onClick={() => { setBookingTutor(t); setBookingStatus(null); setBookingMsg(''); setBookingMateriaId(materiaPrinc?.materia?.id || ''); setBookingFecha(defaultFecha); setBookingHoraInicio('10:00'); }}
                             className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                             <Calendar size={16} /> Reservar
                           </button>

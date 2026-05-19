@@ -132,6 +132,25 @@ export default function Login() {
                   Regístrate gratis
                 </Link>
               </div>
+
+              <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid hsl(var(--border))' }}>
+                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: '0.8rem', textAlign: 'center' }}>
+                  ACCESO RÁPIDO — CUENTAS DEMO
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="button" onClick={() => setFormData({ email: 'estudiante@test.com', password: '123456' })}
+                    style={{ flex: 1, padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid hsl(var(--primary))', background: 'transparent', color: 'hsl(var(--primary))', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}>
+                    🎓 Estudiante Demo
+                  </button>
+                  <button type="button" onClick={() => setFormData({ email: 'carlos@test.com', password: '123456' })}
+                    style={{ flex: 1, padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid hsl(var(--primary))', background: 'transparent', color: 'hsl(var(--primary))', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}>
+                    👨‍🏫 Tutor Demo
+                  </button>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))', textAlign: 'center', marginTop: '0.5rem' }}>
+                  Credenciales precargadas — solo presiona "Ingresar"
+                </p>
+              </div>
             </form>
           )}
         </div>
