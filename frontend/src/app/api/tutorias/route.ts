@@ -30,20 +30,23 @@ export async function POST(req: Request) {
     const horaInicioStr = inicio.toTimeString().slice(0, 5);
     const horaFinStr = fin.toTimeString().slice(0, 5);
 
-    const tieneDisponibilidad = await prisma.disponibilidad.findFirst({
-      where: {
-        tutorId,
-        diaSemana,
-        horaInicio: { lte: horaInicioStr },
-        horaFin: { gte: horaFinStr },
-      }
+    const disponibilidadesTutor = await prisma.disponibilidad.findMany({
+      where: { tutorId }
     });
 
-    if (!tieneDisponibilidad) {
-      return NextResponse.json({
-        status: 'error',
-        message: 'El tutor no tiene disponibilidad en ese horario. Revisa sus horarios disponibles.'
-      }, { status: 400 });
+    if (disponibilidadesTutor.length > 0) {
+      const tieneDisponibilidad = disponibilidadesTutor.some(d =>
+        d.diaSemana === diaSemana &&
+        d.horaInicio <= horaInicioStr &&
+        d.horaFin >= horaFinStr
+      );
+
+      if (!tieneDisponibilidad) {
+        return NextResponse.json({
+          status: 'error',
+          message: 'El tutor no tiene disponibilidad en ese horario. Revisa sus horarios disponibles.'
+        }, { status: 400 });
+      }
     }
 
     const solapamiento = await prisma.tutoria.findFirst({
