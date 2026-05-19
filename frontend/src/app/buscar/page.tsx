@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Search, MapPin, Star, Calendar, X } from 'lucide-react';
+import { GraduationCap, Search, MapPin, Star, Calendar, X, Navigation, Zap } from 'lucide-react';
 
 type TutorData = {
   usuarioId: string;
   reputacionPromedio: number;
   biografia?: string;
   activoAhoraFlash: boolean;
+  latitud?: number;
+  longitud?: number;
   usuario: { nombreCompleto: string; email: string };
   materias: { materia: { id: string; nombre: string; nivelEducativo: string }, tarifaPorHora: number }[];
   disponibilidades: { id: string; diaSemana: number; horaInicio: string; horaFin: string }[];
@@ -26,6 +28,9 @@ export default function BuscarTutores() {
   const [filtroMateria, setFiltroMateria] = useState('');
   const [filtroNivel, setFiltroNivel] = useState('');
   const [filtroRepMin, setFiltroRepMin] = useState('');
+  const [filtroUbicacion, setFiltroUbicacion] = useState('');
+  const [filtroDia, setFiltroDia] = useState('');
+  const [filtroHora, setFiltroHora] = useState('');
   const [loading, setLoading] = useState(true);
 
   const defaultFecha = (() => {
@@ -40,6 +45,9 @@ export default function BuscarTutores() {
   const [bookingStatus, setBookingStatus] = useState<string | null>(null);
   const [bookingMsg, setBookingMsg] = useState('');
 
+  const [flashBookingStatus, setFlashBookingStatus] = useState<{ [key: string]: 'idle' | 'loading' | 'success' | 'error' }>({});
+  const [flashBookingMsg, setFlashBookingMsg] = useState('');
+
   const cargarTutores = () => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -47,6 +55,8 @@ export default function BuscarTutores() {
     if (filtroMateria) params.set('materia', filtroMateria);
     if (filtroNivel) params.set('nivel', filtroNivel);
     if (filtroRepMin) params.set('reputacionMin', filtroRepMin);
+    if (filtroDia) params.set('diaSemana', filtroDia);
+    if (filtroHora) params.set('hora', filtroHora);
 
     fetch(`/api/usuarios/tutores?${params.toString()}`)
       .then(res => res.json())
@@ -78,7 +88,39 @@ export default function BuscarTutores() {
     cargarTutores();
   }, []);
 
-  useEffect(() => { cargarTutores(); }, [filtroMateria, filtroNivel, filtroRepMin]);
+  useEffect(() => { cargarTutores(); }, [filtroMateria, filtroNivel, filtroRepMin, filtroDia, filtroHora]);
+
+  const usarMiUbicacion = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setFiltroUbicacion(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+          const params = new URLSearchParams();
+          if (searchTerm) params.set('materia', searchTerm);
+          if (filtroMateria) params.set('materia', filtroMateria);
+          if (filtroNivel) params.set('nivel', filtroNivel);
+          if (filtroRepMin) params.set('reputacionMin', filtroRepMin);
+          if (filtroDia) params.set('diaSemana', filtroDia);
+          if (filtroHora) params.set('hora', filtroHora);
+          params.set('lat', pos.coords.latitude.toString());
+          params.set('lng', pos.coords.longitude.toString());
+          params.set('distanciaMax', '50');
+
+          setLoading(true);
+          fetch(`/api/usuarios/tutores?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.status === 'success') setTutores(data.data || []);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+        },
+        () => { alert('No se pudo obtener tu ubicación. Activa el GPS.'); }
+      );
+    } else {
+      alert('Geolocalización no soportada en este navegador.');
+    }
+  };
 
   const handleBooking = async () => {
     if (!session || !bookingTutor || !bookingMateriaId || !bookingFecha || !bookingHoraInicio) {
@@ -114,6 +156,32 @@ export default function BuscarTutores() {
     }
   };
 
+  const handleFlashBooking = async (tutorId: string, materiaId: string) => {
+    setFlashBookingStatus(prev => ({ ...prev, [tutorId]: 'loading' }));
+    setFlashBookingMsg('');
+    try {
+      const res = await fetch('/api/tutorias/flash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tutorId, materiaId })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setFlashBookingStatus(prev => ({ ...prev, [tutorId]: 'success' }));
+        setFlashBookingMsg('¡Tutoría iniciada! Ve a tu panel para unirte.');
+        setTimeout(() => setFlashBookingMsg(''), 5000);
+      } else {
+        setFlashBookingStatus(prev => ({ ...prev, [tutorId]: 'error' }));
+        setFlashBookingMsg(data.message || 'Error');
+        setTimeout(() => setFlashBookingMsg(''), 5000);
+      }
+    } catch {
+      setFlashBookingStatus(prev => ({ ...prev, [tutorId]: 'error' }));
+      setFlashBookingMsg('Error de conexión');
+      setTimeout(() => setFlashBookingMsg(''), 5000);
+    }
+  };
+
   const getTutorImageStyle = (nombre: string) => {
     const bank = [
       'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=256&q=80',
@@ -137,6 +205,16 @@ export default function BuscarTutores() {
     ));
   };
 
+  const diasSemanaOpts = [
+    { value: '0', label: 'Domingo' },
+    { value: '1', label: 'Lunes' },
+    { value: '2', label: 'Martes' },
+    { value: '3', label: 'Miércoles' },
+    { value: '4', label: 'Jueves' },
+    { value: '5', label: 'Viernes' },
+    { value: '6', label: 'Sábado' },
+  ];
+
   return (
     <div style={{ backgroundColor: 'hsl(var(--light-bg))', minHeight: '100vh', paddingBottom: '5rem' }}>
       <div className="container">
@@ -159,32 +237,48 @@ export default function BuscarTutores() {
         <main style={{ marginTop: '3rem' }}>
           <div style={{ background: 'hsl(var(--primary))', padding: '2rem 3rem', borderRadius: '1.5rem', color: 'white', marginBottom: '2rem' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>Encuentra a tu tutor ideal</h1>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', background: 'white', padding: '0.8rem', borderRadius: '0.8rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', flex: '1 1 200px', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', background: 'white', padding: '0.8rem', borderRadius: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flex: '1 1 180px', gap: '0.5rem' }}>
                 <Search size={20} style={{ color: '#9ca3af' }} />
                 <input type="text" placeholder="Materia o nombre..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') cargarTutores(); }}
-                  style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.95rem', color: 'hsl(var(--foreground))' }} />
+                  style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.9rem', color: 'hsl(var(--foreground))' }} />
               </div>
               <select value={filtroMateria} onChange={e => setFiltroMateria(e.target.value)}
-                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.5rem', color: 'hsl(var(--foreground))', background: 'white' }}>
-                <option value="">Todas las materias</option>
+                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.4rem', fontSize: '0.85rem', color: 'hsl(var(--foreground))', background: 'white' }}>
+                <option value="">Materia</option>
                 {materias.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
               </select>
               <select value={filtroNivel} onChange={e => setFiltroNivel(e.target.value)}
-                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.5rem', color: 'hsl(var(--foreground))', background: 'white' }}>
-                <option value="">Todos los niveles</option>
+                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.4rem', fontSize: '0.85rem', color: 'hsl(var(--foreground))', background: 'white' }}>
+                <option value="">Nivel</option>
                 <option value="Primaria">Primaria</option>
                 <option value="Secundaria">Secundaria</option>
                 <option value="Universidad">Universidad</option>
               </select>
+              <select value={filtroDia} onChange={e => setFiltroDia(e.target.value)}
+                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.4rem', fontSize: '0.85rem', color: 'hsl(var(--foreground))', background: 'white' }}>
+                <option value="">Día</option>
+                {diasSemanaOpts.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+              </select>
+              <input type="time" value={filtroHora} onChange={e => setFiltroHora(e.target.value)}
+                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.4rem', fontSize: '0.85rem', color: 'hsl(var(--foreground))', background: 'white', width: '100px' }} />
               <select value={filtroRepMin} onChange={e => setFiltroRepMin(e.target.value)}
-                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.5rem', color: 'hsl(var(--foreground))', background: 'white' }}>
-                <option value="">Cualquier reputación</option>
+                style={{ border: '1px solid hsl(var(--border))', borderRadius: '0.5rem', padding: '0.4rem', fontSize: '0.85rem', color: 'hsl(var(--foreground))', background: 'white' }}>
+                <option value="">Reputación</option>
                 <option value="4">4+ estrellas</option>
                 <option value="4.5">4.5+ estrellas</option>
               </select>
-              <button onClick={cargarTutores} className="btn-primary" style={{ padding: '0.5rem 1.5rem' }}>Buscar</button>
+              <button onClick={cargarTutores} className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}>Buscar</button>
+              <button onClick={usarMiUbicacion} style={{ background: '#22c55e', color: 'white', border: 'none', borderRadius: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Navigation size={14} /> Cerca de mí
+              </button>
             </div>
+            {filtroUbicacion && (
+              <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', opacity: 0.8 }}>📍 Filtrando por ubicación: {filtroUbicacion}</p>
+            )}
+            {flashBookingMsg && (
+              <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#bbf7d0', fontWeight: 600 }}>{flashBookingMsg}</p>
+            )}
           </div>
 
           {loading ? (
@@ -201,6 +295,11 @@ export default function BuscarTutores() {
                     <div style={{ width: '100%', height: '200px', position: 'relative', ...getTutorImageStyle(t.usuario.nombreCompleto) }}>
                       {t.activoAhoraFlash && (
                         <span style={{ position: 'absolute', top: '0.8rem', right: '0.8rem', background: '#22c55e', color: 'white', padding: '0.2rem 0.8rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 700 }}>DISPONIBLE AHORA</span>
+                      )}
+                      {t.latitud && t.longitud && (
+                        <span style={{ position: 'absolute', bottom: '0.8rem', left: '0.8rem', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <MapPin size={12} /> {t.latitud.toFixed(2)}, {t.longitud.toFixed(2)}
+                        </span>
                       )}
                     </div>
                     <div style={{ padding: '1.5rem' }}>
@@ -227,13 +326,36 @@ export default function BuscarTutores() {
                         <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'hsl(var(--foreground))' }}>
                           S/ {materiaPrinc?.tarifaPorHora || 50}<span style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>/hr</span>
                         </div>
-                        {session?.rol === 'ESTUDIANTE' && (
-                          <button onClick={() => { setBookingTutor(t); setBookingStatus(null); setBookingMsg(''); setBookingMateriaId(materiaPrinc?.materia?.id || ''); setBookingFecha(defaultFecha); setBookingHoraInicio('10:00'); }}
-                            className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <Calendar size={16} /> Reservar
-                          </button>
-                        )}
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          {session?.rol === 'ESTUDIANTE' && (
+                            <>
+                              {t.activoAhoraFlash && (
+                                <button onClick={() => handleFlashBooking(t.usuarioId, materiaPrinc?.materia?.id || '')}
+                                  disabled={flashBookingStatus[t.usuarioId] === 'loading'}
+                                  style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.5rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                  <Zap size={14} /> {flashBookingStatus[t.usuarioId] === 'loading' ? '...' : 'Ahora'}
+                                </button>
+                              )}
+                              <button onClick={() => { setBookingTutor(t); setBookingStatus(null); setBookingMsg(''); setBookingMateriaId(materiaPrinc?.materia?.id || ''); setBookingFecha(defaultFecha); setBookingHoraInicio('10:00'); }}
+                                className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <Calendar size={16} /> Reservar
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
+                      {t.disponibilidades.length > 0 && (
+                        <details style={{ marginTop: '0.8rem', fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>
+                          <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Ver horarios disponibles</summary>
+                          <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                            {t.disponibilidades.map(d => (
+                              <span key={d.id} style={{ background: '#f3f0ff', padding: '0.2rem 0.5rem', borderRadius: '0.3rem' }}>
+                                {['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.diaSemana]}: {d.horaInicio} - {d.horaFin}
+                              </span>
+                            ))}
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </div>
                 );

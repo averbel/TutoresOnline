@@ -26,6 +26,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: 'error', message: 'La fecha fin debe ser posterior a la fecha inicio' }, { status: 400 });
     }
 
+    const diaSemana = inicio.getDay();
+    const horaInicioStr = inicio.toTimeString().slice(0, 5);
+    const horaFinStr = fin.toTimeString().slice(0, 5);
+
+    const tieneDisponibilidad = await prisma.disponibilidad.findFirst({
+      where: {
+        tutorId,
+        diaSemana,
+        horaInicio: { lte: horaInicioStr },
+        horaFin: { gte: horaFinStr },
+      }
+    });
+
+    if (!tieneDisponibilidad) {
+      return NextResponse.json({
+        status: 'error',
+        message: 'El tutor no tiene disponibilidad en ese horario. Revisa sus horarios disponibles.'
+      }, { status: 400 });
+    }
+
     const solapamiento = await prisma.tutoria.findFirst({
       where: {
         tutorId,

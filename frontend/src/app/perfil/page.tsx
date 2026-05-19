@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Video, Check, X, User, Star, Zap, Calendar, BookOpen } from 'lucide-react';
+import { GraduationCap, Video, Check, X, User, Star, Zap, Calendar, BookOpen, Navigation } from 'lucide-react';
 
 type SessionData = { id: string; nombreCompleto: string; email: string; rol: string };
 type ResenaData = { id: string; tutoriaId: string; calificacionEstrellas: number; feedback?: string; tutoria: { estudiante: { usuario: { nombreCompleto: string } }; materia: { nombre: string } } };
+
+type ToastData = { id: number; message: string; type: 'success' | 'error' | 'info' };
 
 export default function MiPerfil() {
   const [session, setSession] = useState<SessionData | null>(null);
@@ -26,6 +28,18 @@ export default function MiPerfil() {
   const [showResenaForm, setShowResenaForm] = useState<string | null>(null);
   const [resenaRating, setResenaRating] = useState(5);
   const [resenaFeedback, setResenaFeedback] = useState('');
+
+  const [toasts, setToasts] = useState<ToastData[]>([]);
+  let toastId = 0;
+  const addToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const id = ++toastId;
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
+  };
+
+  const [flashTutores, setFlashTutores] = useState<{ usuarioId: string; usuario: { nombreCompleto: string }; reputacionPromedio: number; materias: { materia: { id: string; nombre: string }; tarifaPorHora: number }[] }[]>([]);
+  const [flashBookingLoading, setFlashBookingLoading] = useState<string | null>(null);
+  const [buscandoFlash, setBuscandoFlash] = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -56,17 +70,88 @@ export default function MiPerfil() {
         if (solData.status === 'success') setSolicitudes(solData.data);
         if (flashData.status === 'success') setResenas(flashData.data);
       } else {
-        const [solRes, tutoresRes] = await Promise.all([
+        const [solRes, tutoresRes, flashRes] = await Promise.all([
           fetch(`/api/estudiantes/${user.id}/solicitudes`),
           fetch(`/api/usuarios/tutores?limit=1`),
+          fetch(`/api/tutores/flash`),
         ]);
         const solData = await solRes.json();
         const tutoresData = await tutoresRes.json();
+        const flashData = await flashRes.json();
         if (solData.status === 'success') setSolicitudes(solData.data);
         if (tutoresData.status === 'success') setTutoresDisponibles(tutoresData.meta.total);
+        if (flashData.status === 'success') setFlashTutores(flashData.data || []);
       }
     } catch (error) { console.error(error); }
     finally { setLoading(false); }
+  };
+
+  const buscarFlashAhora = () => {
+    setBuscandoFlash(true);
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const params = new URLSearchParams();
+          params.set('flash', 'true');
+          params.set('lat', pos.coords.latitude.toString());
+          params.set('lng', pos.coords.longitude.toString());
+          params.set('distanciaMax', '100');
+          fetch(`/api/usuarios/tutores?${params.toString()}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data.status === 'success') {
+                setFlashTutores(data.data);
+                if (data.data.length === 0) addToast('No hay tutores Flash cerca de ti', 'info');
+              }
+            })
+            .catch(() => addToast('Error al buscar tutores', 'error'))
+            .finally(() => setBuscandoFlash(false));
+        },
+        () => {
+          fetch(`/api/tutores/flash`)
+            .then(r => r.json())
+            .then(data => {
+              if (data.status === 'success') {
+                setFlashTutores(data.data);
+                if (data.data.length === 0) addToast('No hay tutores Flash disponibles', 'info');
+              }
+            })
+            .finally(() => setBuscandoFlash(false));
+        }
+      );
+    } else {
+      fetch(`/api/tutores/flash`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            setFlashTutores(data.data);
+            if (data.data.length === 0) addToast('No hay tutores Flash disponibles', 'info');
+          }
+        })
+        .finally(() => setBuscandoFlash(false));
+    }
+  };
+
+  const handleFlashBooking = async (tutorId: string, materiaId: string) => {
+    setFlashBookingLoading(tutorId);
+    try {
+      const res = await fetch('/api/tutorias/flash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tutorId, materiaId })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        addToast('¡Tutoría Flash iniciada! Ve a "Próximas Tutorías" para unirte.', 'success');
+        setFlashTutores(prev => prev.filter(t => t.usuarioId !== tutorId));
+      } else {
+        addToast(data.message || 'Error al reservar flash', 'error');
+      }
+    } catch {
+      addToast('Error de conexión', 'error');
+    } finally {
+      setFlashBookingLoading(null);
+    }
   };
 
   const handleSaveDisponibilidad = async () => {
@@ -78,9 +163,11 @@ export default function MiPerfil() {
         body: JSON.stringify({ disponibilidades })
       });
       const data = await res.json();
-      if (data.status === 'success') setDisponibilidades(data.data);
-      else alert("Error: " + data.message);
-    } catch { alert("Error de red"); }
+      if (data.status === 'success') {
+        setDisponibilidades(data.data);
+        addToast('Horarios guardados correctamente', 'success');
+      } else addToast("Error: " + data.message, 'error');
+    } catch { addToast("Error de red", 'error'); }
     finally { setIsSaving(false); }
   };
 
@@ -92,7 +179,8 @@ export default function MiPerfil() {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activo: nuevo })
       });
-    } catch { setFlashActivo(!nuevo); }
+      addToast(nuevo ? 'Modo Flash activado' : 'Modo Flash desactivado', nuevo ? 'success' : 'info');
+    } catch { setFlashActivo(!nuevo); addToast('Error al cambiar modo Flash', 'error'); }
   };
 
   const updateEstadoTutoria = async (tutoriaId: string, nuevoEstado: string) => {
@@ -105,8 +193,9 @@ export default function MiPerfil() {
       if (data.status === 'success') {
         if (nuevoEstado === 'RECHAZADA') setSolicitudes(prev => prev.filter(s => s.id !== tutoriaId));
         else setSolicitudes(prev => prev.map(s => s.id === tutoriaId ? { ...s, estado: 'ACEPTADA', urlEncuentro: data.data.urlEncuentro } : s));
-      } else alert("Error: " + data.message);
-    } catch { alert("Error de red"); }
+        addToast(nuevoEstado === 'ACEPTADA' ? 'Tutoría aceptada' : 'Tutoría rechazada', 'success');
+      } else addToast("Error: " + data.message, 'error');
+    } catch { addToast("Error de red", 'error'); }
   };
 
   const completarTutoria = async (tutoriaId: string) => {
@@ -116,8 +205,11 @@ export default function MiPerfil() {
         body: JSON.stringify({ estado: 'COMPLETADA' })
       });
       const data = await res.json();
-      if (data.status === 'success') setSolicitudes(prev => prev.map(s => s.id === tutoriaId ? { ...s, estado: 'COMPLETADA' } : s));
-    } catch { alert("Error de red"); }
+      if (data.status === 'success') {
+        setSolicitudes(prev => prev.map(s => s.id === tutoriaId ? { ...s, estado: 'COMPLETADA' } : s));
+        addToast('Tutoría marcada como completada', 'success');
+      }
+    } catch { addToast("Error de red", 'error'); }
   };
 
   const enviarResena = async (tutoriaId: string) => {
@@ -131,8 +223,9 @@ export default function MiPerfil() {
         setShowResenaForm(null);
         setResenaRating(5);
         setResenaFeedback('');
-      } else alert("Error: " + data.message);
-    } catch { alert("Error de red"); }
+        addToast('¡Reseña enviada! Gracias por tu feedback.', 'success');
+      } else addToast("Error: " + data.message, 'error');
+    } catch { addToast("Error de red", 'error'); }
   };
 
   const addDisponibilidadSlot = () => setDisponibilidades(prev => [...prev, { diaSemana: 1, horaInicio: '08:00', horaFin: '10:00' }]);
@@ -191,17 +284,50 @@ export default function MiPerfil() {
         </nav>
       </aside>
 
-      <main style={{ flex: 1, padding: '2rem', maxWidth: '100%' }}>
+      <main style={{ flex: 1, padding: '2rem', maxWidth: '100%', position: 'relative' }}>
         {!isTutor && (
           <div className="glass-card mb-8">
-            <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Bienvenido, {session.nombreCompleto}</h1>
-            <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Bienvenido, {session.nombreCompleto}</h1>
+                <p style={{ color: 'hsl(var(--muted-foreground))' }}>{session.email} &bull; Rol: {session.rol}</p>
+              </div>
+              <button onClick={buscarFlashAhora} disabled={buscandoFlash}
+                style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+                <Zap size={18} /> {buscandoFlash ? 'Buscando...' : 'Buscar Tutor Ahora'}
+              </button>
+            </div>
             <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.15)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <BookOpen size={24} style={{ color: 'hsl(var(--primary))' }} />
               <div>
                 <div style={{ fontSize: '2rem', fontWeight: 'bold', lineHeight: 1 }}>{tutoresDisponibles}</div>
                 <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>Tutores Disponibles</div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {!isTutor && flashTutores.length > 0 && (
+          <div className="glass-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #22c55e' }}>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Zap size={20} style={{ color: '#22c55e' }} /> Tutores Disponibles Ahora
+            </h3>
+            <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              {flashTutores.map(t => {
+                const materiaPrinc = t.materias[0];
+                return (
+                  <div key={t.usuarioId} style={{ minWidth: '220px', background: 'rgba(0,0,0,0.2)', borderRadius: '0.8rem', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ fontWeight: 'bold' }}>{t.usuario.nombreCompleto}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>{materiaPrinc?.materia?.nombre || 'General'}</div>
+                    <div style={{ fontSize: '0.8rem' }}>{Array.from({ length: 5 }, (_, i) => <span key={i} style={{ color: i < Math.round(t.reputacionPromedio) ? '#f59e0b' : '#6b7280' }}>★</span>)}</div>
+                    <button onClick={() => handleFlashBooking(t.usuarioId, materiaPrinc?.materia?.id || '')}
+                      disabled={flashBookingLoading === t.usuarioId}
+                      style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
+                      {flashBookingLoading === t.usuarioId ? 'Reservando...' : 'Reservar Ahora'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -381,6 +507,20 @@ export default function MiPerfil() {
             )}
           </div>
         </div>
+
+        {toasts.length > 0 && (
+          <div style={{ position: 'fixed', bottom: '1rem', right: '1rem', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {toasts.map(t => (
+              <div key={t.id} style={{
+                padding: '0.8rem 1.2rem', borderRadius: '0.5rem', color: 'white', fontWeight: 600, fontSize: '0.9rem',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)', animation: 'fadeIn 0.3s',
+                background: t.type === 'success' ? '#22c55e' : t.type === 'error' ? '#ef4444' : '#3b82f6'
+              }}>
+                {t.message}
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
